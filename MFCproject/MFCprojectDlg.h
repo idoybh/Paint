@@ -17,6 +17,7 @@ class CMFCprojectDlg : public CDialogEx
 {
 private:
 	bool isErase = false;
+	bool isPressed = false;
 
 // Construction
 public:
@@ -27,9 +28,9 @@ public:
 	enum { IDD = IDD_MFCPROJECT_DIALOG };
 #endif
 	CPoint start, end;
-	bool isPressed=false;
-	 CTypedPtrArray< CObArray, Figure*> figs;
-	 int futureFigureKind = 1; //Rectangle (2 - Ellipse)
+	
+	CTypedPtrArray< CObArray, Figure*> figs;
+	int futureFigureKind = 0; //Rectangle
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV support
 

@@ -37,6 +37,9 @@ BEGIN_MESSAGE_MAP(CMFCprojectDlg, CDialogEx)
 	ON_WM_MOUSEMOVE()
 	ON_CBN_SELCHANGE(IDC_COMBO2, &CMFCprojectDlg::OnCbnSelchangeCombo2)
 	ON_BN_CLICKED(IDC_CHECK1, &CMFCprojectDlg::OnBnClickedCheck1)
+	ON_BN_CLICKED(ID_FILE_NEW, &CMFCprojectDlg::OnFileNew)
+	ON_BN_CLICKED(ID_FILE_SAVE, &CMFCprojectDlg::OnFileSave)
+	ON_BN_CLICKED(ID_FILE_LOAD, &CMFCprojectDlg::OnFileLoad)
 END_MESSAGE_MAP()
 
 
@@ -118,7 +121,7 @@ void CMFCprojectDlg::OnLButtonDown(UINT nFlags, CPoint point)
 				figs.Add(new EllipseF(start, start));
 				break;
 			case 2:
-				figs.Add(new TriangleF(start, start));
+				figs.Add(new TriangleF(start, start));  
 				break;
 			case 3:
 				figs.Add(new LineF(start, start));
@@ -145,8 +148,16 @@ void CMFCprojectDlg::OnLButtonUp(UINT nFlags, CPoint point)
 
 void CMFCprojectDlg::OnMouseMove(UINT nFlags, CPoint point)
 {
-	if (isPressed)
-	{
+	if (isPressed && isErase) {
+		for (int i = 0; i < figs.GetSize(); i++) {
+			Figure* fig = figs.GetAt(i);
+			if (fig->isInside(point)) {
+				figs.RemoveAt(i);
+				Invalidate();
+				break;
+			}
+		}
+	} else if (isPressed) {
 		end = point;
 		figs[figs.GetSize() - 1]->Redefine(start, end);
 		Invalidate(); //simulates the WM_PAINT message to redraw window
