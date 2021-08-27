@@ -5,18 +5,17 @@
 #pragma once
 
 #include "Figure.h"
-//!! 17 b
 #include "RectangleF.h"
 #include "EllipseF.h"
 #include "LineF.h"
 #include "TriangleF.h"
-//!! 17 e
 
 // CMFCprojectDlg dialog
 class CMFCprojectDlg : public CDialogEx
 {
 private:
 	bool isErase = false;
+	bool isEraseFreeFrm = false;
 	bool isPressed = false;
 
 // Construction
@@ -53,4 +52,6 @@ public:
 	void OnFileSave();
 	void OnFileLoad();
 	afx_msg void OnBnClickedCheck1();
+	afx_msg void OnBnClickedRadio1();
+	afx_msg void OnBnClickedRadio2();
 };

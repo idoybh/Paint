@@ -1,10 +1,7 @@
-//!! 15 b
 #include "stdafx.h"
 #include "EllipseF.h"
 
-//!! 22 b
 IMPLEMENT_SERIAL(EllipseF, CObject, 1)
-//!! 22 e
 
 EllipseF::EllipseF(CPoint p1, CPoint p2)
 	:Figure(p1, p2)

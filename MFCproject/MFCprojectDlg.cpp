@@ -40,6 +40,8 @@ BEGIN_MESSAGE_MAP(CMFCprojectDlg, CDialogEx)
 	ON_BN_CLICKED(ID_FILE_NEW, &CMFCprojectDlg::OnFileNew)
 	ON_BN_CLICKED(ID_FILE_SAVE, &CMFCprojectDlg::OnFileSave)
 	ON_BN_CLICKED(ID_FILE_LOAD, &CMFCprojectDlg::OnFileLoad)
+	ON_BN_CLICKED(IDC_RADIO1, &CMFCprojectDlg::OnBnClickedRadio1)
+	ON_BN_CLICKED(IDC_RADIO2, &CMFCprojectDlg::OnBnClickedRadio2)
 END_MESSAGE_MAP()
 
 
@@ -175,6 +177,30 @@ void CMFCprojectDlg::OnCbnSelchangeCombo2() {
 void CMFCprojectDlg::OnBnClickedCheck1() {
 	CButton* cb = (CButton*) GetDlgItem(IDC_CHECK1);
 	isErase = cb->GetCheck() == BST_CHECKED;
+
+	CButton* ccb1 = (CButton*)GetDlgItem(IDC_RADIO1);
+	CButton* ccb2 = (CButton*)GetDlgItem(IDC_RADIO2);
+	if (isErase) {
+		ccb1->EnableWindow(TRUE);
+		ccb1->SetCheck(BST_CHECKED);
+		ccb2->EnableWindow(TRUE);
+		isEraseFreeFrm = false;
+	} else {
+		ccb1->EnableWindow(FALSE);
+		ccb2->EnableWindow(FALSE);
+	}
+}
+
+void CMFCprojectDlg::OnBnClickedRadio1()
+{
+	CButton* cb = (CButton*)GetDlgItem(IDC_RADIO2);
+	isEraseFreeFrm = cb->GetCheck() == BST_CHECKED;
+}
+
+void CMFCprojectDlg::OnBnClickedRadio2()
+{
+	CButton* cb = (CButton*)GetDlgItem(IDC_RADIO2);
+	isEraseFreeFrm = cb->GetCheck() == BST_CHECKED;
 }
 
 void CMFCprojectDlg::OnFileNew() {
