@@ -2,6 +2,7 @@
 // MFCprojectDlg.cpp : implementation file
 //
 
+#include <string.h>
 #include "stdafx.h"
 #include "MFCproject.h"
 #include "MFCprojectDlg.h"
@@ -10,6 +11,7 @@
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
+#include <sstream>
 
 // CMFCprojectDlg dialog
 
@@ -150,6 +152,14 @@ void CMFCprojectDlg::OnLButtonUp(UINT nFlags, CPoint point)
 
 void CMFCprojectDlg::OnMouseMove(UINT nFlags, CPoint point)
 {
+	CStatic* cs = (CStatic*)GetDlgItem(IDC_STATIC2);
+	std::stringstream str;
+	str << point.x << ":" << point.y;
+	char* cstr = new char[20];
+	strcpy(cstr, str.str().c_str());
+	cs->SetWindowText(CA2W(cstr));
+	delete[] cstr;
+
 	if (isPressed && isErase) {
 		for (int i = 0; i < figs.GetSize(); i++) {
 			Figure* fig = figs.GetAt(i);
@@ -184,6 +194,7 @@ void CMFCprojectDlg::OnBnClickedCheck1() {
 		ccb1->EnableWindow(TRUE);
 		ccb1->SetCheck(BST_CHECKED);
 		ccb2->EnableWindow(TRUE);
+		ccb2->SetCheck(BST_UNCHECKED);
 		isEraseFreeFrm = false;
 	} else {
 		ccb1->EnableWindow(FALSE);
