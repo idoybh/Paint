@@ -118,6 +118,7 @@ void CMFCprojectDlg::OnLButtonDown(UINT nFlags, CPoint point)
 		}
 	} else {
 		switch (futureFigureKind) {
+			default:
 			case 0:
 				figs.Add(new RectangleF(start, start));
 				break;
