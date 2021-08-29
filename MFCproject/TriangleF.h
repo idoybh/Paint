@@ -1,6 +1,7 @@
 #pragma once
-#include "Figure.h"
-class TriangleF : public Figure
+#include "RectangleF.h"
+
+class TriangleF : public RectangleF
 {
 	DECLARE_SERIAL(TriangleF)   //!!! NO ";"
 public:

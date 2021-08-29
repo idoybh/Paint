@@ -8,6 +8,7 @@ class LineF : public Figure
 		// must 4 serialization
 		LineF() {}
 		LineF(CPoint p1, CPoint p2);
+		bool  isInside(const CPoint& P) const;
 		void Draw(CDC* dc) const;
 };
 

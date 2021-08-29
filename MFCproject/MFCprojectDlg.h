@@ -14,9 +14,22 @@
 class CMFCprojectDlg : public CDialogEx
 {
 private:
+	bool isPressed = false;
 	bool isErase = false;
 	bool isEraseFreeFrm = false;
-	bool isPressed = false;
+	bool isMove = false;
+	Figure* movingFig = NULL;
+
+	// controls
+	CComboBox* m_ShapeSelect = NULL;
+	CButton* m_EraseCB = NULL;
+	CButton* m_EraseOBRadio = NULL;
+	CButton* m_EraseFreeRadio = NULL;
+	CButton* m_MoveCB = NULL;
+	CStatic* m_CoordsTxt = NULL;
+	CMFCColorButton* m_BGColorSelect = NULL;
+	CMFCColorButton* m_SColorSelect = NULL;
+	CComboBox* m_WidthSelect = NULL;
 
 // Construction
 public:
@@ -54,4 +67,5 @@ public:
 	afx_msg void OnBnClickedCheck1();
 	afx_msg void OnBnClickedRadio1();
 	afx_msg void OnBnClickedRadio2();
+	afx_msg void OnBnClickedCheck2();
 };

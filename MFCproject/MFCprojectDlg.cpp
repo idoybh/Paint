@@ -14,9 +14,6 @@
 #include <sstream>
 
 // CMFCprojectDlg dialog
-
-
-
 CMFCprojectDlg::CMFCprojectDlg(CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_MFCPROJECT_DIALOG, pParent)
 {
@@ -44,6 +41,7 @@ BEGIN_MESSAGE_MAP(CMFCprojectDlg, CDialogEx)
 	ON_BN_CLICKED(ID_FILE_LOAD, &CMFCprojectDlg::OnFileLoad)
 	ON_BN_CLICKED(IDC_RADIO1, &CMFCprojectDlg::OnBnClickedRadio1)
 	ON_BN_CLICKED(IDC_RADIO2, &CMFCprojectDlg::OnBnClickedRadio2)
+	ON_BN_CLICKED(IDC_CHECK2, &CMFCprojectDlg::OnBnClickedCheck2)
 END_MESSAGE_MAP()
 
 
@@ -58,8 +56,19 @@ BOOL CMFCprojectDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);			// Set big icon
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
-	CComboBox* cb = (CComboBox*) GetDlgItem(IDC_COMBO2);
-	cb->SetCurSel(0);
+	m_ShapeSelect = (CComboBox*)GetDlgItem(IDC_COMBO2);
+	m_ShapeSelect->SetCurSel(0);
+	m_EraseCB = (CButton*)GetDlgItem(IDC_CHECK1);
+	m_EraseOBRadio = (CButton*)GetDlgItem(IDC_RADIO1);
+	m_EraseFreeRadio = (CButton*)GetDlgItem(IDC_RADIO2);
+	m_MoveCB = (CButton*)GetDlgItem(IDC_CHECK2);
+	m_CoordsTxt = (CStatic*)GetDlgItem(IDC_STATIC2);
+	m_BGColorSelect = (CMFCColorButton*)GetDlgItem(IDC_MFCCOLORBUTTON1);
+	m_BGColorSelect->SetColor(0xFFFFFF);
+	m_SColorSelect = (CMFCColorButton*)GetDlgItem(IDC_MFCCOLORBUTTON2);
+	m_SColorSelect->SetColor(0x000000);
+	m_WidthSelect = (CComboBox*)GetDlgItem(IDC_COMBO3);
+	m_WidthSelect->SetCurSel(1);
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -116,6 +125,14 @@ void CMFCprojectDlg::OnLButtonDown(UINT nFlags, CPoint point)
 				break;
 			}
 		}
+	} else if (isMove) {
+		for (int i = 0; i < figs.GetSize(); i++) {
+			Figure* fig = figs.GetAt(i);
+			if (fig->isInside(point)) {
+				movingFig = fig;
+				break;
+			}
+		}
 	} else {
 		switch (futureFigureKind) {
 			default:
@@ -126,12 +143,15 @@ void CMFCprojectDlg::OnLButtonDown(UINT nFlags, CPoint point)
 				figs.Add(new EllipseF(start, start));
 				break;
 			case 2:
-				figs.Add(new TriangleF(start, start));  
+				figs.Add(new TriangleF(start, start));
 				break;
 			case 3:
 				figs.Add(new LineF(start, start));
 				break;
 		}
+		figs[figs.GetSize() - 1]->SetBGColor(m_BGColorSelect->GetColor());
+		figs[figs.GetSize() - 1]->SetSColor(m_SColorSelect->GetColor());
+		figs[figs.GetSize() - 1]->SetSWidth(m_WidthSelect->GetCurSel());
 	}
 	CDialogEx::OnLButtonDown(nFlags, point);
 }
@@ -139,13 +159,15 @@ void CMFCprojectDlg::OnLButtonDown(UINT nFlags, CPoint point)
 
 void CMFCprojectDlg::OnLButtonUp(UINT nFlags, CPoint point)
 {
-	if (isErase && isPressed) {
+	if (isPressed) {
 		isPressed = false;
-	} else if (isPressed) {
-		end = point;
-		isPressed = false;
-		figs[figs.GetSize() - 1]->Redefine(start, end);
-		Invalidate(); //simulates the WM_PAINT message to redraw window
+		if (isMove) {
+			movingFig = NULL;
+		} else if (!isErase) {
+			end = point;
+			figs[figs.GetSize() - 1]->Redefine(start, end);
+			Invalidate(); //simulates the WM_PAINT message to redraw window
+		}
 	}
 	CDialogEx::OnLButtonUp(nFlags, point);
 }
@@ -153,67 +175,82 @@ void CMFCprojectDlg::OnLButtonUp(UINT nFlags, CPoint point)
 
 void CMFCprojectDlg::OnMouseMove(UINT nFlags, CPoint point)
 {
-	CStatic* cs = (CStatic*)GetDlgItem(IDC_STATIC2);
 	std::stringstream str;
 	str << point.x << ":" << point.y;
 	char* cstr = new char[20];
 	strcpy(cstr, str.str().c_str());
-	cs->SetWindowText(CA2W(cstr));
+	m_CoordsTxt->SetWindowText(CA2W(cstr));
 	delete[] cstr;
 
-	if (isPressed && isErase) {
-		for (int i = 0; i < figs.GetSize(); i++) {
-			Figure* fig = figs.GetAt(i);
-			if (fig->isInside(point)) {
-				figs.RemoveAt(i);
-				Invalidate();
-				break;
+	if (isPressed) {
+		if (isErase) {
+			for (int i = 0; i < figs.GetSize(); i++) {
+				Figure* fig = figs.GetAt(i);
+				if (fig->isInside(point)) {
+					figs.RemoveAt(i);
+					Invalidate();
+					break;
+				}
 			}
+		} else if (isMove) {
+			if (movingFig != NULL) {
+				end = point;
+				movingFig->Shift(end.x - start.x, end.y - start.y);
+				start = end;
+				Invalidate();
+			}
+		} else {
+			end = point;
+			figs[figs.GetSize() - 1]->Redefine(start, end);
+			Invalidate(); //simulates the WM_PAINT message to redraw window
 		}
-	} else if (isPressed) {
-		end = point;
-		figs[figs.GetSize() - 1]->Redefine(start, end);
-		Invalidate(); //simulates the WM_PAINT message to redraw window
 	}
 	CDialogEx::OnMouseMove(nFlags, point);
 }
 
-
 void CMFCprojectDlg::OnCbnSelchangeCombo2() {
-	CComboBox* cb = (CComboBox*) GetDlgItem(IDC_COMBO2);
-	futureFigureKind = cb->GetCurSel();
+	futureFigureKind = m_ShapeSelect->GetCurSel();
 }
 
-
 void CMFCprojectDlg::OnBnClickedCheck1() {
-	CButton* cb = (CButton*) GetDlgItem(IDC_CHECK1);
-	isErase = cb->GetCheck() == BST_CHECKED;
+	isErase = m_EraseCB->GetCheck() == BST_CHECKED;
 
-	CButton* ccb1 = (CButton*)GetDlgItem(IDC_RADIO1);
-	CButton* ccb2 = (CButton*)GetDlgItem(IDC_RADIO2);
 	if (isErase) {
-		ccb1->EnableWindow(TRUE);
-		ccb1->SetCheck(BST_CHECKED);
-		ccb2->EnableWindow(TRUE);
-		ccb2->SetCheck(BST_UNCHECKED);
+		m_EraseOBRadio->EnableWindow(TRUE);
+		m_EraseOBRadio->SetCheck(BST_CHECKED);
+		m_EraseFreeRadio->EnableWindow(TRUE);
+		m_EraseFreeRadio->SetCheck(BST_UNCHECKED);
+		m_MoveCB->SetCheck(BST_UNCHECKED);
+		isMove = false;
 		isEraseFreeFrm = false;
 	} else {
-		ccb1->EnableWindow(FALSE);
-		ccb2->EnableWindow(FALSE);
+		m_EraseOBRadio->EnableWindow(FALSE);
+		m_EraseFreeRadio->EnableWindow(FALSE);
 	}
 }
 
 void CMFCprojectDlg::OnBnClickedRadio1()
 {
-	CButton* cb = (CButton*)GetDlgItem(IDC_RADIO2);
-	isEraseFreeFrm = cb->GetCheck() == BST_CHECKED;
+	isEraseFreeFrm = m_EraseFreeRadio->GetCheck() == BST_CHECKED;
 }
 
 void CMFCprojectDlg::OnBnClickedRadio2()
 {
-	CButton* cb = (CButton*)GetDlgItem(IDC_RADIO2);
-	isEraseFreeFrm = cb->GetCheck() == BST_CHECKED;
+	isEraseFreeFrm = m_EraseFreeRadio->GetCheck() == BST_CHECKED;
 }
+
+void CMFCprojectDlg::OnBnClickedCheck2()
+{
+	isMove = m_MoveCB->GetCheck() == BST_CHECKED;
+	if (isMove) {
+		m_EraseOBRadio->EnableWindow(FALSE);
+		m_EraseFreeRadio->EnableWindow(FALSE);
+		m_EraseCB->SetCheck(BST_UNCHECKED);
+		isErase = false;
+	}
+}
+
+// menu
 
 void CMFCprojectDlg::OnFileNew() {
 	figs.RemoveAll();

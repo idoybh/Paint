@@ -4,13 +4,19 @@
 
 IMPLEMENT_SERIAL(TriangleF, CObject, 1)
 
-TriangleF::TriangleF(CPoint p1, CPoint p2) : Figure(p1, p2)
+TriangleF::TriangleF(CPoint p1, CPoint p2) : RectangleF(p1, p2)
 {
 
 }
 
 void TriangleF::Draw(CDC* dc) const
 {
+	CBrush cb(BGColor);
+	cb.CreateSolidBrush(BGColor);
+	CPen cp;
+	cp.CreatePen(PS_SOLID, PenWidth, SColor);
+	dc->SelectObject(cb);
+	dc->SelectObject(cp);
 	CPoint p1 = getP1();
 	CPoint p2 = getP2();
 	CPoint vertices[3];
