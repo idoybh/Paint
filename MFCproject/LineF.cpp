@@ -3,9 +3,12 @@
 
 IMPLEMENT_SERIAL(LineF, CObject, 1)
 
-LineF::LineF(CPoint p1, CPoint p2) : Figure(p1, p2)
-{
+LineF::LineF(CPoint p1, CPoint p2) : Figure(p1, p2) {
+	kind = 3;
+}
 
+LineF::LineF(CPoint p1, CPoint p2, int ID) : Figure(p1, p2, ID) {
+	kind = 3;
 }
 
 bool LineF::isInside(const CPoint& P) const {

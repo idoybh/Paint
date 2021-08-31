@@ -179,6 +179,7 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Action.h" />
     <ClInclude Include="EllipseF.h" />
     <ClInclude Include="Figure.h" />
     <ClInclude Include="LineF.h" />
@@ -191,6 +192,7 @@
     <ClInclude Include="TriangleF.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Action.cpp" />
     <ClCompile Include="EllipseF.cpp" />
     <ClCompile Include="Figure.cpp" />
     <ClCompile Include="LineF.cpp" />

@@ -4,14 +4,17 @@
 
 IMPLEMENT_SERIAL(TriangleF, CObject, 1)
 
-TriangleF::TriangleF(CPoint p1, CPoint p2) : RectangleF(p1, p2)
-{
+TriangleF::TriangleF(CPoint p1, CPoint p2) : RectangleF(p1, p2) {
+	kind = 2;
+}
 
+TriangleF::TriangleF(CPoint p1, CPoint p2, int ID) : RectangleF(p1, p2, ID) {
+	kind = 2;
 }
 
 void TriangleF::Draw(CDC* dc) const
 {
-	CBrush cb(BGColor);
+	CBrush cb;
 	cb.CreateSolidBrush(BGColor);
 	CPen cp;
 	cp.CreatePen(PS_SOLID, PenWidth, SColor);

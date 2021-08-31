@@ -45,6 +45,9 @@
     <ClInclude Include="TriangleF.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Action.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MFCproject.cpp">
@@ -69,6 +72,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TriangleF.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Action.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

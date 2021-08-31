@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "Action.h"
 #include "Figure.h"
 #include "RectangleF.h"
 #include "EllipseF.h"
@@ -14,6 +15,12 @@
 class CMFCprojectDlg : public CDialogEx
 {
 private:
+	CPoint start, end;
+	int futureFigureKind = 0; //Rectangle
+	CTypedPtrArray<CObArray, Figure*> figs;
+	CTypedPtrArray<CObArray, Action*> actions;
+	CTypedPtrArray<CObArray, Action*> redoActions;
+
 	bool isPressed = false;
 	bool isErase = false;
 	bool isEraseFreeFrm = false;
@@ -30,6 +37,12 @@ private:
 	CMFCColorButton* m_BGColorSelect = NULL;
 	CMFCColorButton* m_SColorSelect = NULL;
 	CComboBox* m_WidthSelect = NULL;
+	// menu controls
+	CMenu* m_EditMenu = NULL;
+
+	// helper functions
+	void AddAction(int, Figure);
+	void RestoreFigure(Figure*);
 
 // Construction
 public:
@@ -39,10 +52,7 @@ public:
 #ifdef AFX_DESIGN_TIME
 	enum { IDD = IDD_MFCPROJECT_DIALOG };
 #endif
-	CPoint start, end;
 	
-	CTypedPtrArray< CObArray, Figure*> figs;
-	int futureFigureKind = 0; //Rectangle
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV support
 
@@ -61,11 +71,14 @@ public:
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 	afx_msg void OnCbnSelchangeCombo2();
-	void OnFileNew();
-	void OnFileSave();
-	void OnFileLoad();
 	afx_msg void OnBnClickedCheck1();
 	afx_msg void OnBnClickedRadio1();
 	afx_msg void OnBnClickedRadio2();
 	afx_msg void OnBnClickedCheck2();
+	// menu
+	void OnFileNew();
+	void OnFileSave();
+	void OnFileLoad();
+	void OnEditUndo();
+	void OnEditRedo();
 };

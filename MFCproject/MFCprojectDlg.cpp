@@ -35,13 +35,15 @@ BEGIN_MESSAGE_MAP(CMFCprojectDlg, CDialogEx)
 	ON_WM_LBUTTONUP()
 	ON_WM_MOUSEMOVE()
 	ON_CBN_SELCHANGE(IDC_COMBO2, &CMFCprojectDlg::OnCbnSelchangeCombo2)
+	ON_BN_CLICKED(IDC_RADIO1, &CMFCprojectDlg::OnBnClickedRadio1)
+	ON_BN_CLICKED(IDC_RADIO2, &CMFCprojectDlg::OnBnClickedRadio2)
 	ON_BN_CLICKED(IDC_CHECK1, &CMFCprojectDlg::OnBnClickedCheck1)
+	ON_BN_CLICKED(IDC_CHECK2, &CMFCprojectDlg::OnBnClickedCheck2)
 	ON_BN_CLICKED(ID_FILE_NEW, &CMFCprojectDlg::OnFileNew)
 	ON_BN_CLICKED(ID_FILE_SAVE, &CMFCprojectDlg::OnFileSave)
 	ON_BN_CLICKED(ID_FILE_LOAD, &CMFCprojectDlg::OnFileLoad)
-	ON_BN_CLICKED(IDC_RADIO1, &CMFCprojectDlg::OnBnClickedRadio1)
-	ON_BN_CLICKED(IDC_RADIO2, &CMFCprojectDlg::OnBnClickedRadio2)
-	ON_BN_CLICKED(IDC_CHECK2, &CMFCprojectDlg::OnBnClickedCheck2)
+	ON_BN_CLICKED(ID_EDIT_UNDO, &CMFCprojectDlg::OnEditUndo)
+	ON_BN_CLICKED(ID_EDIT_REDO, &CMFCprojectDlg::OnEditRedo)
 END_MESSAGE_MAP()
 
 
@@ -69,6 +71,7 @@ BOOL CMFCprojectDlg::OnInitDialog()
 	m_SColorSelect->SetColor(0x000000);
 	m_WidthSelect = (CComboBox*)GetDlgItem(IDC_COMBO3);
 	m_WidthSelect->SetCurSel(1);
+	m_EditMenu = GetMenu()->GetSubMenu(1);
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -130,22 +133,23 @@ void CMFCprojectDlg::OnLButtonDown(UINT nFlags, CPoint point)
 			Figure* fig = figs.GetAt(i);
 			if (fig->isInside(point)) {
 				movingFig = fig;
+				AddAction(ACTION_KIND_MOVE, *movingFig);
 				break;
 			}
 		}
 	} else {
 		switch (futureFigureKind) {
 			default:
-			case 0:
+			case FIGURE_KIND_RECTANGLE:
 				figs.Add(new RectangleF(start, start));
 				break;
-			case 1:
+			case FIGURE_KIND_ELLIPSE:
 				figs.Add(new EllipseF(start, start));
 				break;
-			case 2:
+			case FIGURE_KIND_TRIANGLE:
 				figs.Add(new TriangleF(start, start));
 				break;
-			case 3:
+			case FIGURE_KIND_LINE:
 				figs.Add(new LineF(start, start));
 				break;
 		}
@@ -167,6 +171,7 @@ void CMFCprojectDlg::OnLButtonUp(UINT nFlags, CPoint point)
 			end = point;
 			figs[figs.GetSize() - 1]->Redefine(start, end);
 			Invalidate(); //simulates the WM_PAINT message to redraw window
+			AddAction(ACTION_KIND_DRAW, *figs[figs.GetSize() - 1]);
 		}
 	}
 	CDialogEx::OnLButtonUp(nFlags, point);
@@ -187,6 +192,7 @@ void CMFCprojectDlg::OnMouseMove(UINT nFlags, CPoint point)
 			for (int i = 0; i < figs.GetSize(); i++) {
 				Figure* fig = figs.GetAt(i);
 				if (fig->isInside(point)) {
+					AddAction(ACTION_KIND_ERASE, *figs.GetAt(i));
 					figs.RemoveAt(i);
 					Invalidate();
 					break;
@@ -253,6 +259,10 @@ void CMFCprojectDlg::OnBnClickedCheck2()
 // menu
 
 void CMFCprojectDlg::OnFileNew() {
+	actions.RemoveAll();
+	redoActions.RemoveAll();
+	m_EditMenu->EnableMenuItem(ID_EDIT_UNDO, MF_DISABLED);
+	m_EditMenu->EnableMenuItem(ID_EDIT_REDO, MF_DISABLED);
 	figs.RemoveAll();
 	Invalidate();
 }
@@ -285,5 +295,99 @@ void CMFCprojectDlg::OnFileLoad() {
 		ar.Close();
 		file.Close();
 		Invalidate();
+	}
+}
+
+void CMFCprojectDlg::OnEditUndo() {
+	Action* act = actions.GetAt(actions.GetSize() - 1);
+	switch (act->getKind()) {
+		case ACTION_KIND_DRAW:
+			for (int i = 0; i < figs.GetSize(); i++) {
+				if (figs.GetAt(i)->getID() == act->getFigure().getID()) {
+					figs.RemoveAt(i);
+					break;
+				}
+			}
+			redoActions.Add(act);
+			break;
+		case ACTION_KIND_ERASE:
+			RestoreFigure(&act->getFigure());
+			redoActions.Add(new Action(ACTION_KIND_ERASE,
+				*figs.GetAt(figs.GetSize() - 1)));
+			break;
+		case ACTION_KIND_MOVE:
+			for (int i = 0; i < figs.GetSize(); i++) {
+				if (figs.GetAt(i)->getID() == act->getFigure().getID()) {
+					redoActions.Add(new Action(ACTION_KIND_MOVE, *figs.GetAt(i)));
+					figs.GetAt(i)->Redefine(act->getFigure().getP1(),
+						act->getFigure().getP2());
+					break;
+				}
+			}
+			break;
+	}
+	Invalidate();
+	actions.RemoveAt(actions.GetSize() - 1);
+	if (actions.IsEmpty()) m_EditMenu->EnableMenuItem(ID_EDIT_UNDO, MF_DISABLED);
+	m_EditMenu->EnableMenuItem(ID_EDIT_REDO, MF_ENABLED);
+}
+
+void CMFCprojectDlg::OnEditRedo() {
+	Action* act = redoActions.GetAt(redoActions.GetSize() - 1);
+	switch (act->getKind()) {
+		case ACTION_KIND_DRAW:
+			RestoreFigure(&act->getFigure());
+			actions.Add(new Action(ACTION_KIND_DRAW,
+				*figs.GetAt(figs.GetSize() - 1)));
+			break;
+		case ACTION_KIND_ERASE:
+			for (int i = 0; i < figs.GetSize(); i++) {
+				if (figs.GetAt(i)->getID() == act->getFigure().getID()) {
+					figs.RemoveAt(i);
+					break;
+				}
+			}
+			actions.Add(act);
+			break;
+		case ACTION_KIND_MOVE:
+			for (int i = 0; i < figs.GetSize(); i++) {
+				if (figs.GetAt(i)->getID() == act->getFigure().getID()) {
+					actions.Add(new Action(ACTION_KIND_MOVE, *figs.GetAt(i)));
+					figs.GetAt(i)->Redefine(act->getFigure().getP1(),
+						act->getFigure().getP2());
+					break;
+				}
+			}
+			break;
+	}
+	Invalidate();
+	redoActions.RemoveAt(redoActions.GetSize() - 1);
+	m_EditMenu->EnableMenuItem(ID_EDIT_UNDO, MF_ENABLED);
+	if (redoActions.IsEmpty()) m_EditMenu->EnableMenuItem(ID_EDIT_REDO, MF_DISABLED);
+}
+
+// helper functions
+
+void CMFCprojectDlg::AddAction(int kind, Figure fig) {
+	actions.Add(new Action(kind, fig));
+	m_EditMenu->EnableMenuItem(ID_EDIT_UNDO, MF_ENABLED);
+	m_EditMenu->EnableMenuItem(ID_EDIT_REDO, MF_DISABLED);
+	if (!redoActions.IsEmpty()) redoActions.RemoveAll();
+}
+
+void CMFCprojectDlg::RestoreFigure(Figure* fig) {
+	switch (fig->GetKind()) {
+		case FIGURE_KIND_RECTANGLE:
+			figs.Add(new RectangleF(fig->getP1(), fig->getP2(), fig->getID()));
+			break;
+		case FIGURE_KIND_ELLIPSE:
+			figs.Add(new EllipseF(fig->getP1(), fig->getP2(), fig->getID()));
+			break;
+		case FIGURE_KIND_TRIANGLE:
+			figs.Add(new TriangleF(fig->getP1(), fig->getP2(), fig->getID()));
+			break;
+		case FIGURE_KIND_LINE:
+			figs.Add(new LineF(fig->getP1(), fig->getP2(), fig->getID()));
+			break;
 	}
 }
