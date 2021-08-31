@@ -35,7 +35,9 @@ public:
 
 	Figure(const Figure &obj) :
 		P1(obj.getP1()), P2(obj.getP2()),
-		kind(obj.kind), ID(obj.getID()) { }
+		kind(obj.kind), BGColor(obj.BGColor),
+		SColor(obj.SColor), PenWidth(obj.PenWidth),
+		ID(obj.getID()) { }
 
 	void Serialize(CArchive& ar);
 
@@ -59,6 +61,18 @@ public:
 
 	int getID() const {
 		return ID;
+	}
+
+	int GetSWidth() const {
+		return PenWidth;
+	}
+
+	COLORREF GetBGColor() const {
+		return BGColor;
+	}
+
+	COLORREF GetSColor() const {
+		return SColor;
 	}
 
 	void SetBGColor(const COLORREF c) {

@@ -35,10 +35,12 @@ BEGIN_MESSAGE_MAP(CMFCprojectDlg, CDialogEx)
 	ON_WM_LBUTTONUP()
 	ON_WM_MOUSEMOVE()
 	ON_CBN_SELCHANGE(IDC_COMBO2, &CMFCprojectDlg::OnCbnSelchangeCombo2)
-	ON_BN_CLICKED(IDC_RADIO1, &CMFCprojectDlg::OnBnClickedRadio1)
-	ON_BN_CLICKED(IDC_RADIO2, &CMFCprojectDlg::OnBnClickedRadio2)
+	ON_CBN_SELCHANGE(IDC_COMBO3, &CMFCprojectDlg::OnCbnSelchangeCombo3)
+	ON_BN_CLICKED(IDC_MFCCOLORBUTTON1, &CMFCprojectDlg::OnBnClickedMfccolorbutton1)
+	ON_BN_CLICKED(IDC_MFCCOLORBUTTON2, &CMFCprojectDlg::OnBnClickedMfccolorbutton2)
 	ON_BN_CLICKED(IDC_CHECK1, &CMFCprojectDlg::OnBnClickedCheck1)
 	ON_BN_CLICKED(IDC_CHECK2, &CMFCprojectDlg::OnBnClickedCheck2)
+	ON_BN_CLICKED(IDC_CHECK3, &CMFCprojectDlg::OnBnClickedCheck3)
 	ON_BN_CLICKED(ID_FILE_NEW, &CMFCprojectDlg::OnFileNew)
 	ON_BN_CLICKED(ID_FILE_SAVE, &CMFCprojectDlg::OnFileSave)
 	ON_BN_CLICKED(ID_FILE_LOAD, &CMFCprojectDlg::OnFileLoad)
@@ -61,9 +63,8 @@ BOOL CMFCprojectDlg::OnInitDialog()
 	m_ShapeSelect = (CComboBox*)GetDlgItem(IDC_COMBO2);
 	m_ShapeSelect->SetCurSel(0);
 	m_EraseCB = (CButton*)GetDlgItem(IDC_CHECK1);
-	m_EraseOBRadio = (CButton*)GetDlgItem(IDC_RADIO1);
-	m_EraseFreeRadio = (CButton*)GetDlgItem(IDC_RADIO2);
 	m_MoveCB = (CButton*)GetDlgItem(IDC_CHECK2);
+	m_TransformCB = (CButton*)GetDlgItem(IDC_CHECK3);
 	m_CoordsTxt = (CStatic*)GetDlgItem(IDC_STATIC2);
 	m_BGColorSelect = (CMFCColorButton*)GetDlgItem(IDC_MFCCOLORBUTTON1);
 	m_BGColorSelect->SetColor(0xFFFFFF);
@@ -119,43 +120,44 @@ void CMFCprojectDlg::OnLButtonDown(UINT nFlags, CPoint point)
 {
 	start = point;
 	isPressed = true;
-	if (isErase) {
-		for (int i = 0; i < figs.GetSize(); i++) {
-			Figure* fig = figs.GetAt(i);
-			if (fig->isInside(point)) {
-				figs.RemoveAt(i);
-				Invalidate();
-				break;
+	switch (futureActionKind) {
+		default:
+		case ACTION_KIND_DRAW:
+			DrawFig(futureFigureKind, start, start);
+			break;
+		case ACTION_KIND_ERASE:
+			for (int i = 0; i < figs.GetSize(); i++) {
+				Figure* fig = figs.GetAt(i);
+				if (fig->isInside(point)) {
+					figs.RemoveAt(i);
+					Invalidate();
+					break;
+				}
 			}
-		}
-	} else if (isMove) {
-		for (int i = 0; i < figs.GetSize(); i++) {
-			Figure* fig = figs.GetAt(i);
-			if (fig->isInside(point)) {
-				movingFig = fig;
-				AddAction(ACTION_KIND_MOVE, *movingFig);
-				break;
+			break;
+		case ACTION_KIND_MOVE:
+			for (int i = 0; i < figs.GetSize(); i++) {
+				Figure* fig = figs.GetAt(i);
+				if (fig->isInside(point)) {
+					movingFig = fig;
+					AddAction(ACTION_KIND_MOVE, *movingFig);
+					break;
+				}
 			}
-		}
-	} else {
-		switch (futureFigureKind) {
-			default:
-			case FIGURE_KIND_RECTANGLE:
-				figs.Add(new RectangleF(start, start));
-				break;
-			case FIGURE_KIND_ELLIPSE:
-				figs.Add(new EllipseF(start, start));
-				break;
-			case FIGURE_KIND_TRIANGLE:
-				figs.Add(new TriangleF(start, start));
-				break;
-			case FIGURE_KIND_LINE:
-				figs.Add(new LineF(start, start));
-				break;
-		}
-		figs[figs.GetSize() - 1]->SetBGColor(m_BGColorSelect->GetColor());
-		figs[figs.GetSize() - 1]->SetSColor(m_SColorSelect->GetColor());
-		figs[figs.GetSize() - 1]->SetSWidth(m_WidthSelect->GetCurSel());
+			break;
+		case ACTION_KIND_TRANSFORM:
+			for (int i = 0; i < figs.GetSize(); i++) {
+				Figure* fig = figs.GetAt(i);
+				if (fig->isInside(point)) {
+					AddAction(ACTION_KIND_TRANSFORM, *figs.GetAt(i));
+					DrawFig(futureFigureKind, figs.GetAt(i)->getP1(), figs.GetAt(i)->getP2(),
+						figs.GetAt(i)->getID());
+					figs.RemoveAt(i);
+					Invalidate();
+					break;
+				}
+			}
+			break;
 	}
 	CDialogEx::OnLButtonDown(nFlags, point);
 }
@@ -165,13 +167,21 @@ void CMFCprojectDlg::OnLButtonUp(UINT nFlags, CPoint point)
 {
 	if (isPressed) {
 		isPressed = false;
-		if (isMove) {
-			movingFig = NULL;
-		} else if (!isErase) {
-			end = point;
-			figs[figs.GetSize() - 1]->Redefine(start, end);
-			Invalidate(); //simulates the WM_PAINT message to redraw window
-			AddAction(ACTION_KIND_DRAW, *figs[figs.GetSize() - 1]);
+		switch (futureActionKind) {
+			default:
+			case ACTION_KIND_DRAW:
+				end = point;
+				figs[figs.GetSize() - 1]->Redefine(start, end);
+				Invalidate(); //simulates the WM_PAINT message to redraw window
+				AddAction(ACTION_KIND_DRAW, *figs[figs.GetSize() - 1]);
+				break;
+			case ACTION_KIND_ERASE:
+				break;
+			case ACTION_KIND_MOVE:
+				movingFig = NULL;
+				break;
+			case ACTION_KIND_TRANSFORM:
+				break;
 		}
 	}
 	CDialogEx::OnLButtonUp(nFlags, point);
@@ -188,27 +198,34 @@ void CMFCprojectDlg::OnMouseMove(UINT nFlags, CPoint point)
 	delete[] cstr;
 
 	if (isPressed) {
-		if (isErase) {
-			for (int i = 0; i < figs.GetSize(); i++) {
-				Figure* fig = figs.GetAt(i);
-				if (fig->isInside(point)) {
-					AddAction(ACTION_KIND_ERASE, *figs.GetAt(i));
-					figs.RemoveAt(i);
-					Invalidate();
-					break;
-				}
-			}
-		} else if (isMove) {
-			if (movingFig != NULL) {
+		switch (futureActionKind) {
+			default:
+			case ACTION_KIND_DRAW:
 				end = point;
-				movingFig->Shift(end.x - start.x, end.y - start.y);
-				start = end;
-				Invalidate();
-			}
-		} else {
-			end = point;
-			figs[figs.GetSize() - 1]->Redefine(start, end);
-			Invalidate(); //simulates the WM_PAINT message to redraw window
+				figs[figs.GetSize() - 1]->Redefine(start, end);
+				Invalidate(); //simulates the WM_PAINT message to redraw window
+				break;
+			case ACTION_KIND_ERASE:
+				for (int i = 0; i < figs.GetSize(); i++) {
+					Figure* fig = figs.GetAt(i);
+					if (fig->isInside(point)) {
+						AddAction(ACTION_KIND_ERASE, *figs.GetAt(i));
+						figs.RemoveAt(i);
+						Invalidate();
+						break;
+					}
+				}
+				break;
+			case ACTION_KIND_MOVE:
+				if (movingFig != NULL) {
+					end = point;
+					movingFig->Shift(end.x - start.x, end.y - start.y);
+					start = end;
+					Invalidate();
+				}
+				break;
+			case ACTION_KIND_TRANSFORM:
+				break;
 		}
 	}
 	CDialogEx::OnMouseMove(nFlags, point);
@@ -216,43 +233,52 @@ void CMFCprojectDlg::OnMouseMove(UINT nFlags, CPoint point)
 
 void CMFCprojectDlg::OnCbnSelchangeCombo2() {
 	futureFigureKind = m_ShapeSelect->GetCurSel();
+	EnableDrawing();
+}
+
+void CMFCprojectDlg::OnCbnSelchangeCombo3() {
+	EnableDrawing();
+}
+
+void CMFCprojectDlg::OnBnClickedMfccolorbutton1() {
+	EnableDrawing();
+}
+
+
+void CMFCprojectDlg::OnBnClickedMfccolorbutton2() {
+	EnableDrawing();
 }
 
 void CMFCprojectDlg::OnBnClickedCheck1() {
-	isErase = m_EraseCB->GetCheck() == BST_CHECKED;
-
-	if (isErase) {
-		m_EraseOBRadio->EnableWindow(TRUE);
-		m_EraseOBRadio->SetCheck(BST_CHECKED);
-		m_EraseFreeRadio->EnableWindow(TRUE);
-		m_EraseFreeRadio->SetCheck(BST_UNCHECKED);
+	bool checked = m_EraseCB->GetCheck() == BST_CHECKED;
+	if (checked) {
 		m_MoveCB->SetCheck(BST_UNCHECKED);
-		isMove = false;
-		isEraseFreeFrm = false;
+		m_TransformCB->SetCheck(BST_UNCHECKED);
+		futureActionKind = ACTION_KIND_ERASE;
 	} else {
-		m_EraseOBRadio->EnableWindow(FALSE);
-		m_EraseFreeRadio->EnableWindow(FALSE);
+		futureActionKind = ACTION_KIND_DRAW;
 	}
 }
 
-void CMFCprojectDlg::OnBnClickedRadio1()
-{
-	isEraseFreeFrm = m_EraseFreeRadio->GetCheck() == BST_CHECKED;
-}
-
-void CMFCprojectDlg::OnBnClickedRadio2()
-{
-	isEraseFreeFrm = m_EraseFreeRadio->GetCheck() == BST_CHECKED;
-}
-
-void CMFCprojectDlg::OnBnClickedCheck2()
-{
-	isMove = m_MoveCB->GetCheck() == BST_CHECKED;
-	if (isMove) {
-		m_EraseOBRadio->EnableWindow(FALSE);
-		m_EraseFreeRadio->EnableWindow(FALSE);
+void CMFCprojectDlg::OnBnClickedCheck2() {
+	bool checked = m_MoveCB->GetCheck() == BST_CHECKED;
+	if (checked) {
 		m_EraseCB->SetCheck(BST_UNCHECKED);
-		isErase = false;
+		m_TransformCB->SetCheck(BST_UNCHECKED);
+		futureActionKind = ACTION_KIND_MOVE;
+	} else {
+		futureActionKind = ACTION_KIND_DRAW;
+	}
+}
+
+void CMFCprojectDlg::OnBnClickedCheck3() {
+	bool checked = m_TransformCB->GetCheck() == BST_CHECKED;
+	if (checked) {
+		m_EraseCB->SetCheck(BST_UNCHECKED);
+		m_MoveCB->SetCheck(BST_UNCHECKED);
+		futureActionKind = ACTION_KIND_TRANSFORM;
+	} else {
+		futureActionKind = ACTION_KIND_DRAW;
 	}
 }
 
@@ -300,10 +326,11 @@ void CMFCprojectDlg::OnFileLoad() {
 
 void CMFCprojectDlg::OnEditUndo() {
 	Action* act = actions.GetAt(actions.GetSize() - 1);
+	Figure* fig = &act->getFigure();
 	switch (act->getKind()) {
 		case ACTION_KIND_DRAW:
 			for (int i = 0; i < figs.GetSize(); i++) {
-				if (figs.GetAt(i)->getID() == act->getFigure().getID()) {
+				if (figs.GetAt(i)->getID() == fig->getID()) {
 					figs.RemoveAt(i);
 					break;
 				}
@@ -311,16 +338,25 @@ void CMFCprojectDlg::OnEditUndo() {
 			redoActions.Add(act);
 			break;
 		case ACTION_KIND_ERASE:
-			RestoreFigure(&act->getFigure());
+			RestoreFigure(fig);
 			redoActions.Add(new Action(ACTION_KIND_ERASE,
 				*figs.GetAt(figs.GetSize() - 1)));
 			break;
 		case ACTION_KIND_MOVE:
 			for (int i = 0; i < figs.GetSize(); i++) {
-				if (figs.GetAt(i)->getID() == act->getFigure().getID()) {
+				if (figs.GetAt(i)->getID() == fig->getID()) {
 					redoActions.Add(new Action(ACTION_KIND_MOVE, *figs.GetAt(i)));
-					figs.GetAt(i)->Redefine(act->getFigure().getP1(),
-						act->getFigure().getP2());
+					figs.GetAt(i)->Redefine(fig->getP1(), fig->getP2());
+					break;
+				}
+			}
+			break;
+		case ACTION_KIND_TRANSFORM:
+			for (int i = 0; i < figs.GetSize(); i++) {
+				if (figs.GetAt(i)->getID() == fig->getID()) {
+					redoActions.Add(new Action(ACTION_KIND_TRANSFORM, *figs.GetAt(i)));
+					RestoreFigure(fig);
+					figs.RemoveAt(i);
 					break;
 				}
 			}
@@ -334,15 +370,16 @@ void CMFCprojectDlg::OnEditUndo() {
 
 void CMFCprojectDlg::OnEditRedo() {
 	Action* act = redoActions.GetAt(redoActions.GetSize() - 1);
+	Figure* fig = &act->getFigure();
 	switch (act->getKind()) {
 		case ACTION_KIND_DRAW:
-			RestoreFigure(&act->getFigure());
+			RestoreFigure(fig);
 			actions.Add(new Action(ACTION_KIND_DRAW,
 				*figs.GetAt(figs.GetSize() - 1)));
 			break;
 		case ACTION_KIND_ERASE:
 			for (int i = 0; i < figs.GetSize(); i++) {
-				if (figs.GetAt(i)->getID() == act->getFigure().getID()) {
+				if (figs.GetAt(i)->getID() == fig->getID()) {
 					figs.RemoveAt(i);
 					break;
 				}
@@ -351,10 +388,19 @@ void CMFCprojectDlg::OnEditRedo() {
 			break;
 		case ACTION_KIND_MOVE:
 			for (int i = 0; i < figs.GetSize(); i++) {
-				if (figs.GetAt(i)->getID() == act->getFigure().getID()) {
+				if (figs.GetAt(i)->getID() == fig->getID()) {
 					actions.Add(new Action(ACTION_KIND_MOVE, *figs.GetAt(i)));
-					figs.GetAt(i)->Redefine(act->getFigure().getP1(),
-						act->getFigure().getP2());
+					figs.GetAt(i)->Redefine(fig->getP1(), fig->getP2());
+					break;
+				}
+			}
+			break;
+		case ACTION_KIND_TRANSFORM:
+			for (int i = 0; i < figs.GetSize(); i++) {
+				if (figs.GetAt(i)->getID() == fig->getID()) {
+					actions.Add(new Action(ACTION_KIND_TRANSFORM, *figs.GetAt(i)));
+					RestoreFigure(fig);
+					figs.RemoveAt(i);
 					break;
 				}
 			}
@@ -367,6 +413,48 @@ void CMFCprojectDlg::OnEditRedo() {
 }
 
 // helper functions
+
+void CMFCprojectDlg::DrawFig(int kind, CPoint p1, CPoint p2) {
+	switch (kind) {
+		default:
+		case FIGURE_KIND_RECTANGLE:
+			figs.Add(new RectangleF(p1, p2));
+			break;
+		case FIGURE_KIND_ELLIPSE:
+			figs.Add(new EllipseF(p1, p2));
+			break;
+		case FIGURE_KIND_TRIANGLE:
+			figs.Add(new TriangleF(p1, p2));
+			break;
+		case FIGURE_KIND_LINE:
+			figs.Add(new LineF(p1, p2));
+			break;
+	}
+	figs[figs.GetSize() - 1]->SetBGColor(m_BGColorSelect->GetColor());
+	figs[figs.GetSize() - 1]->SetSColor(m_SColorSelect->GetColor());
+	figs[figs.GetSize() - 1]->SetSWidth(m_WidthSelect->GetCurSel());
+}
+
+void CMFCprojectDlg::DrawFig(int kind, CPoint p1, CPoint p2, int ID) {
+	switch (kind) {
+		default:
+		case FIGURE_KIND_RECTANGLE:
+			figs.Add(new RectangleF(p1, p2, ID));
+			break;
+		case FIGURE_KIND_ELLIPSE:
+			figs.Add(new EllipseF(p1, p2, ID));
+			break;
+		case FIGURE_KIND_TRIANGLE:
+			figs.Add(new TriangleF(p1, p2, ID));
+			break;
+		case FIGURE_KIND_LINE:
+			figs.Add(new LineF(p1, p2, ID));
+			break;
+	}
+	figs[figs.GetSize() - 1]->SetBGColor(m_BGColorSelect->GetColor());
+	figs[figs.GetSize() - 1]->SetSColor(m_SColorSelect->GetColor());
+	figs[figs.GetSize() - 1]->SetSWidth(m_WidthSelect->GetCurSel());
+}
 
 void CMFCprojectDlg::AddAction(int kind, Figure fig) {
 	actions.Add(new Action(kind, fig));
@@ -390,4 +478,14 @@ void CMFCprojectDlg::RestoreFigure(Figure* fig) {
 			figs.Add(new LineF(fig->getP1(), fig->getP2(), fig->getID()));
 			break;
 	}
+	figs[figs.GetSize() - 1]->SetBGColor(fig->GetBGColor());
+	figs[figs.GetSize() - 1]->SetSColor(fig->GetSColor());
+	figs[figs.GetSize() - 1]->SetSWidth(fig->GetSWidth());
+}
+
+void CMFCprojectDlg::EnableDrawing() {
+	if (futureActionKind == ACTION_KIND_TRANSFORM) return;
+	m_EraseCB->SetCheck(BST_UNCHECKED);
+	m_MoveCB->SetCheck(BST_UNCHECKED);
+	futureActionKind = ACTION_KIND_DRAW;
 }

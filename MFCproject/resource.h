@@ -16,6 +16,7 @@
 #define IDC_CHECK2                      1015
 #define IDC_MFCCOLORBUTTON1             1016
 #define IDC_MFCCOLORBUTTON2             1017
+#define IDC_CHECK3                      1018
 #define ID_FILE_SAVE32771               32771
 #define ID_FILE_LOAD                    32772
 #define ID_FILE_NEW32773                32773
