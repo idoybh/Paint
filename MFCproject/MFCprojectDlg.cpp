@@ -303,6 +303,8 @@ void CMFCprojectDlg::OnFileSave() {
 		CFile file(filename, CFile::modeCreate | CFile::modeWrite);
 		CArchive ar(&file, CArchive::store);
 		figs.Serialize(ar);
+		actions.Serialize(ar);
+		redoActions.Serialize(ar);
 		ar.Close();
 		file.Close();
 	}
@@ -318,9 +320,15 @@ void CMFCprojectDlg::OnFileLoad() {
 		CFile file(filename, CFile::modeRead);
 		CArchive ar(&file, CArchive::load);
 		figs.Serialize(ar);
+		actions.Serialize(ar);
+		redoActions.Serialize(ar);
 		ar.Close();
 		file.Close();
 		Invalidate();
+		m_EditMenu->EnableMenuItem(ID_EDIT_UNDO,
+			actions.IsEmpty() ? MF_DISABLED : MF_ENABLED);
+		m_EditMenu->EnableMenuItem(ID_EDIT_REDO,
+			redoActions.IsEmpty() ? MF_DISABLED : MF_ENABLED);
 	}
 }
 

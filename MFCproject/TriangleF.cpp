@@ -15,9 +15,9 @@ TriangleF::TriangleF(CPoint p1, CPoint p2, int ID) : RectangleF(p1, p2, ID) {
 void TriangleF::Draw(CDC* dc) const
 {
 	CBrush cb;
-	cb.CreateSolidBrush(BGColor);
+	cb.CreateSolidBrush(GetBGColor());
 	CPen cp;
-	cp.CreatePen(PS_SOLID, PenWidth, SColor);
+	cp.CreatePen(PS_SOLID, GetSWidth(), GetSColor());
 	dc->SelectObject(cb);
 	dc->SelectObject(cp);
 	CPoint p1 = getP1();
