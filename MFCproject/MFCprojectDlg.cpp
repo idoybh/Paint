@@ -28,6 +28,7 @@ void CMFCprojectDlg::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CMFCprojectDlg, CDialogEx)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
+	ON_WM_RBUTTONDOWN()
 	ON_WM_LBUTTONDOWN()
 	ON_WM_LBUTTONUP()
 	ON_WM_MOUSEMOVE()
@@ -46,6 +47,8 @@ BEGIN_MESSAGE_MAP(CMFCprojectDlg, CDialogEx)
 	ON_BN_CLICKED(ID_FILE_LOAD, &CMFCprojectDlg::OnFileLoad)
 	ON_BN_CLICKED(ID_EDIT_UNDO, &CMFCprojectDlg::OnEditUndo)
 	ON_BN_CLICKED(ID_EDIT_REDO, &CMFCprojectDlg::OnEditRedo)
+	ON_COMMAND(ID_FIGKIND_ERASE, &CMFCprojectDlg::OnFigkindErase)
+	ON_COMMAND(ID_FIGKIND_TRANSFORM, &CMFCprojectDlg::OnFigkindTransform)
 END_MESSAGE_MAP()
 
 
@@ -113,9 +116,25 @@ void CMFCprojectDlg::OnPaint()
 
 // The system calls this function to obtain the cursor to display while the user drags
 //  the minimized window.
-HCURSOR CMFCprojectDlg::OnQueryDragIcon()
-{
+HCURSOR CMFCprojectDlg::OnQueryDragIcon() {
 	return static_cast<HCURSOR>(m_hIcon);
+}
+
+void CMFCprojectDlg::OnRButtonDown(UINT nFlags, CPoint point) {
+	for (int i = 0; i < figs.GetSize(); i++) {
+		Figure* fig = figs.GetAt(i);
+		if (fig->isInside(point)) {
+			// open up context menu for the current figure
+			contextFigIndex = i;
+			CMenu menu;
+			menu.LoadMenuW(IDR_MENU2);
+			CMenu* pPopup = menu.GetSubMenu(0);
+			ClientToScreen(&point);
+			pPopup->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y, this);
+			break;
+		}
+	}
+	CDialogEx::OnRButtonDown(nFlags, point);
 }
 
 void CMFCprojectDlg::OnLButtonDown(UINT nFlags, CPoint point)
@@ -430,6 +449,22 @@ void CMFCprojectDlg::OnEditRedo() {
 	redoActions.RemoveAt(redoActions.GetSize() - 1);
 	m_EditMenu->EnableMenuItem(ID_EDIT_UNDO, MF_ENABLED);
 	if (redoActions.IsEmpty()) m_EditMenu->EnableMenuItem(ID_EDIT_REDO, MF_DISABLED);
+}
+
+// context menu
+
+void CMFCprojectDlg::OnFigkindErase() {
+	AddAction(ACTION_KIND_ERASE, *figs.GetAt(contextFigIndex));
+	figs.RemoveAt(contextFigIndex);
+	Invalidate();
+}
+
+void CMFCprojectDlg::OnFigkindTransform() {
+	AddAction(ACTION_KIND_TRANSFORM, *figs.GetAt(contextFigIndex));
+	DrawFig(futureFigureKind, figs.GetAt(contextFigIndex)->getP1(),
+		figs.GetAt(contextFigIndex)->getP2(), figs.GetAt(contextFigIndex)->getID());
+	figs.RemoveAt(contextFigIndex);
+	Invalidate();
 }
 
 // helper functions

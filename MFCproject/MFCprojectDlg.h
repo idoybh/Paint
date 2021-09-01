@@ -18,6 +18,7 @@ private:
 	CPoint start, end;
 	int futureFigureKind = FIGURE_KIND_RECTANGLE;
 	int futureActionKind = ACTION_KIND_DRAW;
+	int contextFigIndex = -1;
 	CTypedPtrArray<CObArray, Figure*> figs;
 	CTypedPtrArray<CObArray, Action*> actions;
 	CTypedPtrArray<CObArray, Action*> redoActions;
@@ -69,6 +70,7 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
+	afx_msg void OnRButtonDown(UINT nFlags, CPoint point);
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 	afx_msg void OnCbnSelchangeCombo2();
@@ -79,9 +81,12 @@ public:
 	afx_msg void OnBnClickedMfccolorbutton2();
 	afx_msg void OnBnClickedCheck3();
 	// menu
-	void OnFileNew();
-	void OnFileSave();
-	void OnFileLoad();
-	void OnEditUndo();
-	void OnEditRedo();
+	afx_msg void OnFileNew();
+	afx_msg void OnFileSave();
+	afx_msg void OnFileLoad();
+	afx_msg void OnEditUndo();
+	afx_msg void OnEditRedo();
+	// context menu
+	afx_msg void OnFigkindErase();
+	afx_msg void OnFigkindTransform();
 };
