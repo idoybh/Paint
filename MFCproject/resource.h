@@ -17,6 +17,7 @@
 #define IDC_MFCCOLORBUTTON1             1016
 #define IDC_MFCCOLORBUTTON2             1017
 #define IDC_CHECK3                      1018
+#define IDC_HOTKEY1                     1022
 #define ID_FILE_SAVE32771               32771
 #define ID_FILE_LOAD                    32772
 #define ID_FILE_NEW32773                32773
@@ -29,7 +30,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        132
 #define _APS_NEXT_COMMAND_VALUE         32776
-#define _APS_NEXT_CONTROL_VALUE         1022
+#define _APS_NEXT_CONTROL_VALUE         1023
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

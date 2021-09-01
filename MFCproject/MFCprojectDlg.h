@@ -43,6 +43,7 @@ private:
 	void AddAction(int, Figure);
 	void RestoreFigure(Figure*);
 	void EnableDrawing();
+	bool isInsideCanvas(const CPoint&);
 
 // Construction
 public:

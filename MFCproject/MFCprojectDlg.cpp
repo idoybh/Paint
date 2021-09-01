@@ -60,6 +60,7 @@ BOOL CMFCprojectDlg::OnInitDialog()
 	SetIcon(m_hIcon, TRUE);			// Set big icon
 	SetIcon(m_hIcon, FALSE);		// Set small icon
 
+	//controls
 	m_ShapeSelect = (CComboBox*)GetDlgItem(IDC_COMBO2);
 	m_ShapeSelect->SetCurSel(0);
 	m_EraseCB = (CButton*)GetDlgItem(IDC_CHECK1);
@@ -72,6 +73,7 @@ BOOL CMFCprojectDlg::OnInitDialog()
 	m_SColorSelect->SetColor(0x000000);
 	m_WidthSelect = (CComboBox*)GetDlgItem(IDC_COMBO3);
 	m_WidthSelect->SetCurSel(1);
+	// menu
 	m_EditMenu = GetMenu()->GetSubMenu(1);
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
@@ -118,46 +120,48 @@ HCURSOR CMFCprojectDlg::OnQueryDragIcon()
 
 void CMFCprojectDlg::OnLButtonDown(UINT nFlags, CPoint point)
 {
-	start = point;
-	isPressed = true;
-	switch (futureActionKind) {
-		default:
-		case ACTION_KIND_DRAW:
-			DrawFig(futureFigureKind, start, start);
-			break;
-		case ACTION_KIND_ERASE:
-			for (int i = 0; i < figs.GetSize(); i++) {
-				Figure* fig = figs.GetAt(i);
-				if (fig->isInside(point)) {
-					figs.RemoveAt(i);
-					Invalidate();
-					break;
+	if (isInsideCanvas(point)) {
+		start = point;
+		isPressed = true;
+		switch (futureActionKind) {
+			default:
+			case ACTION_KIND_DRAW:
+				DrawFig(futureFigureKind, start, start);
+				break;
+			case ACTION_KIND_ERASE:
+				for (int i = 0; i < figs.GetSize(); i++) {
+					Figure* fig = figs.GetAt(i);
+					if (fig->isInside(point)) {
+						figs.RemoveAt(i);
+						Invalidate();
+						break;
+					}
 				}
-			}
-			break;
-		case ACTION_KIND_MOVE:
-			for (int i = 0; i < figs.GetSize(); i++) {
-				Figure* fig = figs.GetAt(i);
-				if (fig->isInside(point)) {
-					movingFig = fig;
-					AddAction(ACTION_KIND_MOVE, *movingFig);
-					break;
+				break;
+			case ACTION_KIND_MOVE:
+				for (int i = 0; i < figs.GetSize(); i++) {
+					Figure* fig = figs.GetAt(i);
+					if (fig->isInside(point)) {
+						movingFig = fig;
+						AddAction(ACTION_KIND_MOVE, *movingFig);
+						break;
+					}
 				}
-			}
-			break;
-		case ACTION_KIND_TRANSFORM:
-			for (int i = 0; i < figs.GetSize(); i++) {
-				Figure* fig = figs.GetAt(i);
-				if (fig->isInside(point)) {
-					AddAction(ACTION_KIND_TRANSFORM, *figs.GetAt(i));
-					DrawFig(futureFigureKind, figs.GetAt(i)->getP1(), figs.GetAt(i)->getP2(),
-						figs.GetAt(i)->getID());
-					figs.RemoveAt(i);
-					Invalidate();
-					break;
+				break;
+			case ACTION_KIND_TRANSFORM:
+				for (int i = 0; i < figs.GetSize(); i++) {
+					Figure* fig = figs.GetAt(i);
+					if (fig->isInside(point)) {
+						AddAction(ACTION_KIND_TRANSFORM, *figs.GetAt(i));
+						DrawFig(futureFigureKind, figs.GetAt(i)->getP1(),
+							figs.GetAt(i)->getP2(), figs.GetAt(i)->getID());
+						figs.RemoveAt(i);
+						Invalidate();
+						break;
+					}
 				}
-			}
-			break;
+				break;
+		}
 	}
 	CDialogEx::OnLButtonDown(nFlags, point);
 }
@@ -197,7 +201,7 @@ void CMFCprojectDlg::OnMouseMove(UINT nFlags, CPoint point)
 	m_CoordsTxt->SetWindowText(CA2W(cstr));
 	delete[] cstr;
 
-	if (isPressed) {
+	if (isPressed && isInsideCanvas(point)) {
 		switch (futureActionKind) {
 			default:
 			case ACTION_KIND_DRAW:
@@ -219,6 +223,14 @@ void CMFCprojectDlg::OnMouseMove(UINT nFlags, CPoint point)
 			case ACTION_KIND_MOVE:
 				if (movingFig != NULL) {
 					end = point;
+					// avoid moving out of canvas
+					CPoint fPTL = movingFig->getP1().x < movingFig->getP2().x ?
+						movingFig->getP1() : movingFig->getP2();
+					fPTL.x += end.x - start.x; fPTL.y += end.y - start.y;
+					CPoint fPBR = movingFig->getP1().x < movingFig->getP2().x ?
+						movingFig->getP2() : movingFig->getP1();
+					fPBR.x += end.x - start.x; fPBR.y += end.y - start.y;
+					if (!isInsideCanvas(fPTL) || !isInsideCanvas(fPBR)) break;
 					movingFig->Shift(end.x - start.x, end.y - start.y);
 					start = end;
 					Invalidate();
@@ -496,4 +508,9 @@ void CMFCprojectDlg::EnableDrawing() {
 	m_EraseCB->SetCheck(BST_UNCHECKED);
 	m_MoveCB->SetCheck(BST_UNCHECKED);
 	futureActionKind = ACTION_KIND_DRAW;
+}
+
+bool CMFCprojectDlg::isInsideCanvas(const CPoint& pnt) {
+	return (pnt.x >= 14 && pnt.y >= 76
+		&& pnt.x <= 787 && pnt.y <= 480);
 }
