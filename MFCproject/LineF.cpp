@@ -3,17 +3,17 @@
 
 IMPLEMENT_SERIAL(LineF, CObject, 1)
 
-LineF::LineF(CPoint p1, CPoint p2) : Figure(p1, p2) {
+LineF::LineF(CPoint p1, CPoint p2) : RectangleF(p1, p2) {
 	kind = 3;
 }
 
-LineF::LineF(CPoint p1, CPoint p2, int ID) : Figure(p1, p2, ID) {
+LineF::LineF(CPoint p1, CPoint p2, int ID) : RectangleF(p1, p2, ID) {
 	kind = 3;
 }
 
 bool LineF::isInside(const CPoint& P) const {
 	// skip calculating if not even in the bounding rectangle
-	if (!Figure::isInside(P)) return false;
+	if (!RectangleF::isInside(P)) return false;
 
 	CPoint p1 = getP1();
 	CPoint p2 = getP2();

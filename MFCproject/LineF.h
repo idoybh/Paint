@@ -1,7 +1,7 @@
 #pragma once
-#include "Figure.h"
+#include "RectangleF.h"
 
-class LineF : public Figure {
+class LineF : public RectangleF {
 	DECLARE_SERIAL(LineF)   //!!! NO ";"  
 public:
 	// must 4 serialization
