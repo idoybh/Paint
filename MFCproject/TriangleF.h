@@ -3,8 +3,10 @@
 
 class TriangleF : public RectangleF
 {
-	DECLARE_SERIAL(TriangleF)   //!!! NO ";"
+private:
+
 public:
+	DECLARE_SERIAL(TriangleF)   //!!! NO ";"
 	// must 4 serialization
 	TriangleF() {}
 	TriangleF(CPoint p1, CPoint p2);

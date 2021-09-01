@@ -5,6 +5,7 @@
 #define FIGURE_KIND_ELLIPSE 1
 #define FIGURE_KIND_TRIANGLE 2
 #define FIGURE_KIND_LINE 3
+#define FIGURE_KIND_FREE_LINE 4
 
 static int figID = 1;
 
@@ -29,7 +30,7 @@ public:
 	Figure(CPoint p1, CPoint p2, int ID);
 	Figure(const Figure& obj);
 
-	void Serialize(CArchive& ar);
+	virtual void Serialize(CArchive& ar);
 	virtual void Draw(CDC* dc) const;
 	CPoint getP1() const;
 	CPoint getP2() const;

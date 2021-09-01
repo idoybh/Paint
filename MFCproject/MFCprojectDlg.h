@@ -10,6 +10,7 @@
 #include "EllipseF.h"
 #include "LineF.h"
 #include "TriangleF.h"
+#include "FreeLineF.h"
 
 // CMFCprojectDlg dialog
 class CMFCprojectDlg : public CDialogEx

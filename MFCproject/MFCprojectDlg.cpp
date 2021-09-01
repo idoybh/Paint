@@ -130,6 +130,8 @@ void CMFCprojectDlg::OnRButtonDown(UINT nFlags, CPoint point) {
 			menu.LoadMenuW(IDR_MENU2);
 			CMenu* pPopup = menu.GetSubMenu(0);
 			ClientToScreen(&point);
+			if (fig->GetKind() == FIGURE_KIND_FREE_LINE) // can't transform a free line
+				pPopup->EnableMenuItem(ID_FIGKIND_TRANSFORM, MF_DISABLED);
 			pPopup->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y, this);
 			break;
 		}
@@ -145,12 +147,19 @@ void CMFCprojectDlg::OnLButtonDown(UINT nFlags, CPoint point)
 		switch (futureActionKind) {
 			default:
 			case ACTION_KIND_DRAW:
-				DrawFig(futureFigureKind, start, start);
+				if (futureFigureKind != FIGURE_KIND_FREE_LINE) {
+					DrawFig(futureFigureKind, start, start);
+				} else {
+					figs.Add(new FreeLineF(start));
+					figs[figs.GetSize() - 1]->SetSColor(m_SColorSelect->GetColor());
+					figs[figs.GetSize() - 1]->SetSWidth(m_WidthSelect->GetCurSel());
+				}
 				break;
 			case ACTION_KIND_ERASE:
 				for (int i = 0; i < figs.GetSize(); i++) {
 					Figure* fig = figs.GetAt(i);
 					if (fig->isInside(point)) {
+						AddAction(ACTION_KIND_ERASE, *fig);
 						figs.RemoveAt(i);
 						Invalidate();
 						break;
@@ -168,8 +177,10 @@ void CMFCprojectDlg::OnLButtonDown(UINT nFlags, CPoint point)
 				}
 				break;
 			case ACTION_KIND_TRANSFORM:
+				if (futureActionKind == FIGURE_KIND_FREE_LINE) break;
 				for (int i = 0; i < figs.GetSize(); i++) {
 					Figure* fig = figs.GetAt(i);
+					if (fig->GetKind() == FIGURE_KIND_FREE_LINE) continue;
 					if (fig->isInside(point)) {
 						AddAction(ACTION_KIND_TRANSFORM, *figs.GetAt(i));
 						DrawFig(futureFigureKind, figs.GetAt(i)->getP1(),
@@ -193,6 +204,10 @@ void CMFCprojectDlg::OnLButtonUp(UINT nFlags, CPoint point)
 		switch (futureActionKind) {
 			default:
 			case ACTION_KIND_DRAW:
+				if (futureFigureKind == FIGURE_KIND_FREE_LINE) {
+					AddAction(ACTION_KIND_DRAW, *figs[figs.GetSize() - 1]);
+					break;
+				}
 				end = point;
 				figs[figs.GetSize() - 1]->Redefine(start, end);
 				Invalidate(); //simulates the WM_PAINT message to redraw window
@@ -225,7 +240,10 @@ void CMFCprojectDlg::OnMouseMove(UINT nFlags, CPoint point)
 			default:
 			case ACTION_KIND_DRAW:
 				end = point;
-				figs[figs.GetSize() - 1]->Redefine(start, end);
+				if (futureFigureKind != FIGURE_KIND_FREE_LINE)
+					figs[figs.GetSize() - 1]->Redefine(start, end);
+				else
+					((FreeLineF*)figs[figs.GetSize() - 1])->AddPoint(end);
 				Invalidate(); //simulates the WM_PAINT message to redraw window
 				break;
 			case ACTION_KIND_ERASE:
@@ -242,15 +260,26 @@ void CMFCprojectDlg::OnMouseMove(UINT nFlags, CPoint point)
 			case ACTION_KIND_MOVE:
 				if (movingFig != NULL) {
 					end = point;
+					double deltaX = end.x - start.x;
+					double deltaY = end.y - start.y;
 					// avoid moving out of canvas
-					CPoint fPTL = movingFig->getP1().x < movingFig->getP2().x ?
-						movingFig->getP1() : movingFig->getP2();
-					fPTL.x += end.x - start.x; fPTL.y += end.y - start.y;
-					CPoint fPBR = movingFig->getP1().x < movingFig->getP2().x ?
-						movingFig->getP2() : movingFig->getP1();
-					fPBR.x += end.x - start.x; fPBR.y += end.y - start.y;
-					if (!isInsideCanvas(fPTL) || !isInsideCanvas(fPBR)) break;
-					movingFig->Shift(end.x - start.x, end.y - start.y);
+					if (futureFigureKind != FIGURE_KIND_FREE_LINE) {
+						CPoint fPTL = movingFig->getP1().x < movingFig->getP2().x ?
+							movingFig->getP1() : movingFig->getP2();
+						fPTL.x += deltaX; fPTL.y += deltaY;
+						CPoint fPBR = movingFig->getP1().x < movingFig->getP2().x ?
+							movingFig->getP2() : movingFig->getP1();
+						fPBR.x += deltaX; fPBR.y += deltaY;
+						if (!isInsideCanvas(fPTL) || !isInsideCanvas(fPBR)) break;
+					} else {
+						FreeLineF* line = (FreeLineF*)movingFig;
+						CPoint tL = line->getTopLeft();
+						CPoint bR = line->getBotRight();
+						tL.x += deltaX; bR.x += deltaX;
+						tL.y += deltaY; bR.y += deltaY;
+						if (!isInsideCanvas(tL) || !isInsideCanvas(bR)) break;
+					}
+					movingFig->Shift(deltaX, deltaY);
 					start = end;
 					Invalidate();
 				}
@@ -377,7 +406,14 @@ void CMFCprojectDlg::OnEditUndo() {
 			redoActions.Add(act);
 			break;
 		case ACTION_KIND_ERASE:
-			RestoreFigure(fig);
+			if (fig->GetKind() != FIGURE_KIND_FREE_LINE) {
+				RestoreFigure(fig);
+			} else {
+				figs.Add(new FreeLineF(
+					((FreeLineF*) fig)->getPoints(), fig->getID()));
+				figs[figs.GetSize() - 1]->SetSColor(fig->GetSColor());
+				figs[figs.GetSize() - 1]->SetSWidth(fig->GetSWidth());
+			}
 			redoActions.Add(new Action(ACTION_KIND_ERASE,
 				*figs.GetAt(figs.GetSize() - 1)));
 			break;
@@ -412,7 +448,14 @@ void CMFCprojectDlg::OnEditRedo() {
 	Figure* fig = &act->getFigure();
 	switch (act->getKind()) {
 		case ACTION_KIND_DRAW:
-			RestoreFigure(fig);
+			if (fig->GetKind() != FIGURE_KIND_FREE_LINE) {
+				RestoreFigure(fig);
+			} else {
+				figs.Add(new FreeLineF(
+					((FreeLineF*)fig)->getPoints(), fig->getID()));
+				figs[figs.GetSize() - 1]->SetSColor(fig->GetSColor());
+				figs[figs.GetSize() - 1]->SetSWidth(fig->GetSWidth());
+			}
 			actions.Add(new Action(ACTION_KIND_DRAW,
 				*figs.GetAt(figs.GetSize() - 1)));
 			break;

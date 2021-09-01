@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -182,6 +182,7 @@
     <ClInclude Include="Action.h" />
     <ClInclude Include="EllipseF.h" />
     <ClInclude Include="Figure.h" />
+    <ClInclude Include="FreeLineF.h" />
     <ClInclude Include="LineF.h" />
     <ClInclude Include="MFCproject.h" />
     <ClInclude Include="MFCprojectDlg.h" />
@@ -195,6 +196,7 @@
     <ClCompile Include="Action.cpp" />
     <ClCompile Include="EllipseF.cpp" />
     <ClCompile Include="Figure.cpp" />
+    <ClCompile Include="FreeLineF.cpp" />
     <ClCompile Include="LineF.cpp" />
     <ClCompile Include="MFCproject.cpp" />
     <ClCompile Include="MFCprojectDlg.cpp" />
