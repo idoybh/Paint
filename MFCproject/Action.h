@@ -13,7 +13,7 @@ private:
 
 public:
 	DECLARE_SERIAL(Action)
-	Action() : kind(0) {}; // for serialization
+	Action() : kind(0) { }; // for serialization
 	Action(int, Figure);
 	void Serialize(CArchive& ar);
 	int getKind() const;

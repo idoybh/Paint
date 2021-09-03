@@ -1,4 +1,5 @@
 #pragma once
+#include <vector>
 #include "stdafx.h"
 
 #define FIGURE_KIND_RECTANGLE 0
@@ -6,6 +7,8 @@
 #define FIGURE_KIND_TRIANGLE 2
 #define FIGURE_KIND_LINE 3
 #define FIGURE_KIND_FREE_LINE 4
+
+using std::vector;
 
 static int figID = 1;
 
@@ -21,6 +24,7 @@ private:
 
 protected:
 	int kind = 0;
+	vector<CPoint> points;
 
 public:
 	DECLARE_SERIAL(Figure)   //!!! NO ";"  
@@ -32,8 +36,8 @@ public:
 
 	virtual void Serialize(CArchive& ar);
 	virtual void Draw(CDC* dc) const;
-	CPoint getP1() const;
-	CPoint getP2() const;
+	virtual CPoint getP1() const;
+	virtual CPoint getP2() const;
 	int getID() const;
 	int GetSWidth() const;
 	COLORREF GetBGColor() const;
@@ -45,4 +49,5 @@ public:
 	virtual void Redefine(CPoint p1, CPoint p2);
 	virtual bool isInside(const CPoint &P) const;
 	virtual void Shift(int dx, int dy);
+	virtual vector<CPoint> getPoints() const { return points; };
 };

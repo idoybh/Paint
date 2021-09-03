@@ -15,36 +15,23 @@ FreeLineF::FreeLineF(CPoint p1, int ID) : Figure(p1, p1, ID) {
 	topLeft = botRight = p1;
 }
 
-FreeLineF::FreeLineF(vector<CPoint> points)
-	: Figure(*points.begin(), *points.begin()) {
+FreeLineF::FreeLineF(vector<CPoint> points) {
 	kind = 4;
 	this->points = points;
 	UpdateCorners();
 }
 
 FreeLineF::FreeLineF(vector<CPoint> points, int ID)
-	: Figure(*points.begin(), *points.begin(), ID) {
+	: Figure(NULL, NULL, ID) {
 	kind = 4;
 	this->points = points;
 	UpdateCorners();
 }
 
 FreeLineF::FreeLineF(const FreeLineF& obj)
-	: Figure(*obj.points.begin(), *obj.points.begin(), obj.getID()) {
+	: Figure(NULL, NULL, obj.getID()) {
 	kind = 4;
 	points = obj.points;
-}
-
-void FreeLineF::Serialize(CArchive& ar) {
-	CObject::Serialize(ar);
-	Figure::Serialize(ar);
-	if (ar.IsStoring()) {
-		for (auto i = points.begin(); i != points.end(); ++i)
-			ar << *i;
-	} else { // Loading, not storing
-		for (auto i = points.begin(); i != points.end(); ++i)
-			ar >> *i;
-	}
 }
 
 void FreeLineF::Draw(CDC* dc) const {
@@ -87,6 +74,12 @@ void FreeLineF::Shift(int dx, int dy) {
 	botRight.y += dy;
 }
 
+void FreeLineF::Redefine(CPoint p1, CPoint p2) {
+	int dx = p1.x - topLeft.x;
+	int dy = p1.y - topLeft.y;
+	Shift(dx, dy);
+}
+
 void FreeLineF::AddPoint(const CPoint& pnt) {
 	points.push_back(pnt);
 	if (pnt.x < topLeft.x) topLeft.x = pnt.x;
@@ -95,15 +88,11 @@ void FreeLineF::AddPoint(const CPoint& pnt) {
 	if (pnt.y > botRight.y) botRight.y = pnt.y;
 }
 
-vector<CPoint> FreeLineF::getPoints() const {
-	return points;
-}
-
-CPoint FreeLineF::getTopLeft() const {
+CPoint FreeLineF::getP1() const {
 	return topLeft;
 }
 
-CPoint FreeLineF::getBotRight() const {
+CPoint FreeLineF::getP2() const {
 	return botRight;
 }
 

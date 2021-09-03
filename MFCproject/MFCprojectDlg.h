@@ -42,7 +42,7 @@ private:
 	// helper functions
 	void DrawFig(int, CPoint, CPoint);
 	void DrawFig(int, CPoint, CPoint, int);
-	void AddAction(int, Figure);
+	void AddAction(int, Figure*);
 	void RestoreFigure(Figure*);
 	void EnableDrawing();
 	bool isInsideCanvas(const CPoint&);
