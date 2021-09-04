@@ -15,13 +15,11 @@
 
 // CMFCprojectDlg dialog
 CMFCprojectDlg::CMFCprojectDlg(CWnd* pParent /*=nullptr*/)
-	: CDialogEx(IDD_MFCPROJECT_DIALOG, pParent)
-{
+	: CDialogEx(IDD_MFCPROJECT_DIALOG, pParent) {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);
 }
 
-void CMFCprojectDlg::DoDataExchange(CDataExchange* pDX)
-{
+void CMFCprojectDlg::DoDataExchange(CDataExchange* pDX) {
 	CDialogEx::DoDataExchange(pDX);
 }
 
@@ -38,6 +36,7 @@ BEGIN_MESSAGE_MAP(CMFCprojectDlg, CDialogEx)
 	ON_WM_MOUSEMOVE()
 	ON_CBN_SELCHANGE(IDC_COMBO2, &CMFCprojectDlg::OnCbnSelchangeCombo2)
 	ON_CBN_SELCHANGE(IDC_COMBO3, &CMFCprojectDlg::OnCbnSelchangeCombo3)
+	ON_CBN_SELCHANGE(IDC_COMBO4, &CMFCprojectDlg::OnCbnSelchangeCombo4)
 	ON_BN_CLICKED(IDC_BUTTON1, &CMFCprojectDlg::OnBnClickedButton1)
 	ON_BN_CLICKED(IDC_BUTTON2, &CMFCprojectDlg::OnBnClickedButton2)
 	ON_BN_CLICKED(IDC_MFCCOLORBUTTON1, &CMFCprojectDlg::OnBnClickedMfccolorbutton1)
@@ -72,6 +71,10 @@ BOOL CMFCprojectDlg::OnInitDialog()
 	//controls
 	m_ShapeSelect = (CComboBox*)GetDlgItem(IDC_COMBO2);
 	m_ShapeSelect->SetCurSel(0);
+	m_WidthSelect = (CComboBox*)GetDlgItem(IDC_COMBO3);
+	m_WidthSelect->SetCurSel(1);
+	m_StyleSelect = (CComboBox*)GetDlgItem(IDC_COMBO4);
+	m_StyleSelect->SetCurSel(0);
 	m_EraseCB = (CButton*)GetDlgItem(IDC_CHECK1);
 	m_MoveCB = (CButton*)GetDlgItem(IDC_CHECK2);
 	m_TransformCB = (CButton*)GetDlgItem(IDC_CHECK3);
@@ -82,8 +85,6 @@ BOOL CMFCprojectDlg::OnInitDialog()
 	m_BGColorSelect->SetColor(0xFFFFFF);
 	m_SColorSelect = (CMFCColorButton*)GetDlgItem(IDC_MFCCOLORBUTTON2);
 	m_SColorSelect->SetColor(0x000000);
-	m_WidthSelect = (CComboBox*)GetDlgItem(IDC_COMBO3);
-	m_WidthSelect->SetCurSel(1);
 	// menu
 	m_EditMenu = GetMenu()->GetSubMenu(1);
 
@@ -155,6 +156,9 @@ void CMFCprojectDlg::OnCancel() {
 }
 
 void CMFCprojectDlg::OnRButtonDown(UINT nFlags, CPoint point) {
+	CMenu cmenu;
+	cmenu.LoadMenuW(IDR_MENU2);
+	CMenu* popup = cmenu.GetSubMenu(0);
 	cursorP = point;
 	bool found = false;
 	for (int i = figs.GetSize() - 1; i >= 0; i--) {
@@ -164,9 +168,6 @@ void CMFCprojectDlg::OnRButtonDown(UINT nFlags, CPoint point) {
 			found = true;
 			contextFigIndex = i;
 			ClientToScreen(&point);
-			CMenu cmenu;
-			cmenu.LoadMenuW(IDR_MENU2);
-			CMenu* popup = cmenu.GetSubMenu(0);
 			popup->EnableMenuItem(ID_FIGKIND_PASTE, copyFig != NULL ? MF_ENABLED : MF_DISABLED);
 			popup->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y, this);
 			break;
@@ -174,9 +175,6 @@ void CMFCprojectDlg::OnRButtonDown(UINT nFlags, CPoint point) {
 	}
 	if (!found && copyFig != NULL) {
 		ClientToScreen(&point);
-		CMenu cmenu;
-		cmenu.LoadMenuW(IDR_MENU2);
-		CMenu* popup = cmenu.GetSubMenu(0);
 		popup->EnableMenuItem(ID_FIGKIND_ERASE, MF_DISABLED);
 		popup->EnableMenuItem(ID_FIGKIND_TRANSFORM, MF_DISABLED);
 		popup->EnableMenuItem(ID_FIGKIND_COPY, MF_DISABLED);
@@ -222,9 +220,7 @@ void CMFCprojectDlg::OnLButtonDown(UINT nFlags, CPoint point)
 					Figure* fig = figs.GetAt(i);
 					if (fig->isInside(point)) {
 						AddAction(ACTION_KIND_TRANSFORM, figs.GetAt(i));
-						fig->SetBGColor(m_BGColorSelect->GetColor());
-						fig->SetSColor(m_SColorSelect->GetColor());
-						fig->SetSWidth(m_WidthSelect->GetCurSel());
+						SetSelectedProps(figs.GetAt(i));
 						Invalidate();
 						break;
 					}
@@ -325,9 +321,26 @@ void CMFCprojectDlg::OnCbnSelchangeCombo2() {
 	futureFigureKind = m_ShapeSelect->GetCurSel();
 	m_TransformCB->SetCheck(BST_UNCHECKED);
 	EnableDrawing();
+	if (futureFigureKind == FIGURE_KIND_FREE_LINE) {
+		m_StyleSelect->SetCurSel(0);
+		m_StyleSelect->EnableWindow(FALSE);
+	} else if (m_WidthSelect->GetCurSel() == 1) {
+		m_StyleSelect->EnableWindow(TRUE);
+	}
 }
 
 void CMFCprojectDlg::OnCbnSelchangeCombo3() {
+	if (futureActionKind != ACTION_KIND_TRANSFORM)
+		EnableDrawing();
+	if (m_WidthSelect->GetCurSel() != 1) {
+		m_StyleSelect->SetCurSel(0);
+		m_StyleSelect->EnableWindow(FALSE);
+	} else if (futureFigureKind != FIGURE_KIND_FREE_LINE) {
+		m_StyleSelect->EnableWindow(TRUE);
+	}
+}
+
+void CMFCprojectDlg::OnCbnSelchangeCombo4() {
 	if (futureActionKind != ACTION_KIND_TRANSFORM)
 		EnableDrawing();
 }
@@ -336,7 +349,6 @@ void CMFCprojectDlg::OnBnClickedMfccolorbutton1() {
 	if (futureActionKind != ACTION_KIND_TRANSFORM)
 		EnableDrawing();
 }
-
 
 void CMFCprojectDlg::OnBnClickedMfccolorbutton2() {
 	if (futureActionKind != ACTION_KIND_TRANSFORM)
@@ -465,6 +477,7 @@ void CMFCprojectDlg::OnEditUndo() {
 					figs.GetAt(i)->SetBGColor(fig->GetBGColor());
 					figs.GetAt(i)->SetSColor(fig->GetSColor());
 					figs.GetAt(i)->SetSWidth(fig->GetSWidth());
+					figs.GetAt(i)->SetSStyle(fig->GetSStyle());
 					break;
 				}
 			}
@@ -515,6 +528,7 @@ void CMFCprojectDlg::OnEditRedo() {
 					figs.GetAt(i)->SetBGColor(fig->GetBGColor());
 					figs.GetAt(i)->SetSColor(fig->GetSColor());
 					figs.GetAt(i)->SetSWidth(fig->GetSWidth());
+					figs.GetAt(i)->SetSStyle(fig->GetSStyle());
 					break;
 				}
 			}
@@ -540,9 +554,7 @@ void CMFCprojectDlg::OnFigkindErase() {
 
 void CMFCprojectDlg::OnFigkindTransform() {
 	AddAction(ACTION_KIND_TRANSFORM, figs.GetAt(contextFigIndex));
-	figs.GetAt(contextFigIndex)->SetBGColor(m_BGColorSelect->GetColor());
-	figs.GetAt(contextFigIndex)->SetSColor(m_SColorSelect->GetColor());
-	figs.GetAt(contextFigIndex)->SetSWidth(m_WidthSelect->GetCurSel());
+	SetSelectedProps(figs.GetAt(contextFigIndex));
 	Invalidate();
 }
 
@@ -587,10 +599,7 @@ void CMFCprojectDlg::OnFigkindPaste() {
 		}
 	}
 	figs[figs.GetSize() - 1]->Redefine(cursorP, p2);
-	// restore properties
-	figs[figs.GetSize() - 1]->SetBGColor(copyFig->GetBGColor());
-	figs[figs.GetSize() - 1]->SetSColor(copyFig->GetSColor());
-	figs[figs.GetSize() - 1]->SetSWidth(copyFig->GetSWidth());
+	SetSelectedProps(figs[figs.GetSize() - 1]);
 
 	AddAction(ACTION_KIND_DRAW, figs[figs.GetSize() - 1]);
 	Invalidate();
@@ -616,9 +625,7 @@ void CMFCprojectDlg::DrawFig(int kind, CPoint p1, CPoint p2) {
 		case FIGURE_KIND_FREE_LINE:
 			figs.Add(new FreeLineF(p1));
 	}
-	figs[figs.GetSize() - 1]->SetBGColor(m_BGColorSelect->GetColor());
-	figs[figs.GetSize() - 1]->SetSColor(m_SColorSelect->GetColor());
-	figs[figs.GetSize() - 1]->SetSWidth(m_WidthSelect->GetCurSel());
+	SetSelectedProps(figs[figs.GetSize() - 1]);
 }
 
 void CMFCprojectDlg::DrawFig(int kind, CPoint p1, CPoint p2, int ID) {
@@ -639,9 +646,14 @@ void CMFCprojectDlg::DrawFig(int kind, CPoint p1, CPoint p2, int ID) {
 		case FIGURE_KIND_FREE_LINE:
 			figs.Add(new FreeLineF(p1, ID));
 	}
-	figs[figs.GetSize() - 1]->SetBGColor(m_BGColorSelect->GetColor());
-	figs[figs.GetSize() - 1]->SetSColor(m_SColorSelect->GetColor());
-	figs[figs.GetSize() - 1]->SetSWidth(m_WidthSelect->GetCurSel());
+	SetSelectedProps(figs[figs.GetSize() - 1]);
+}
+
+void CMFCprojectDlg::SetSelectedProps(Figure* fig) {
+	fig->SetBGColor(m_BGColorSelect->GetColor());
+	fig->SetSColor(m_SColorSelect->GetColor());
+	fig->SetSWidth(m_WidthSelect->GetCurSel());
+	fig->SetSStyle(m_StyleSelect->GetCurSel());
 }
 
 void CMFCprojectDlg::AddAction(int kind, Figure* fig) {
@@ -675,6 +687,7 @@ void CMFCprojectDlg::RestoreFigure(Figure* fig) {
 	figs[figs.GetSize() - 1]->SetBGColor(fig->GetBGColor());
 	figs[figs.GetSize() - 1]->SetSColor(fig->GetSColor());
 	figs[figs.GetSize() - 1]->SetSWidth(fig->GetSWidth());
+	figs[figs.GetSize() - 1]->SetSStyle(fig->GetSWidth());
 }
 
 void CMFCprojectDlg::EnableDrawing() {

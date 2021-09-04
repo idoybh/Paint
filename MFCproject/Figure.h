@@ -21,6 +21,7 @@ private:
 	COLORREF BGColor = 0xFFFFFF;
 	COLORREF SColor = 0x000000;
 	int PenWidth = 1;
+	int PenStyle = PS_SOLID;
 
 protected:
 	int kind = 0;
@@ -39,11 +40,13 @@ public:
 	virtual CPoint getP2() const;
 	int getID() const;
 	int GetSWidth() const;
+	int GetSStyle() const;
 	COLORREF GetBGColor() const;
 	COLORREF GetSColor() const;
 	void SetBGColor(const COLORREF c);
 	void SetSColor(const COLORREF c);
 	void SetSWidth(const int w);
+	void SetSStyle(const int s);
 	int GetKind() const;
 	virtual void Redefine(CPoint p1, CPoint p2);
 	virtual bool isInside(const CPoint &P) const;

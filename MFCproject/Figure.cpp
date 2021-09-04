@@ -15,7 +15,7 @@ Figure::Figure(const Figure& obj) :
 	P1(obj.getP1()), P2(obj.getP2()),
 	kind(obj.kind), BGColor(obj.BGColor),
 	SColor(obj.SColor), PenWidth(obj.PenWidth),
-	ID(obj.getID()) {
+	PenStyle(obj.PenStyle), ID(obj.getID()) {
 }
 
 void Figure::Serialize(CArchive& ar) {
@@ -28,6 +28,7 @@ void Figure::Serialize(CArchive& ar) {
 		ar << BGColor;
 		ar << SColor;
 		ar << PenWidth;
+		ar << PenStyle;
 	} else { // Loading, not storing
 		ar >> P1;
 		ar >> P2;
@@ -36,6 +37,7 @@ void Figure::Serialize(CArchive& ar) {
 		ar >> BGColor;
 		ar >> SColor;
 		ar >> PenWidth;
+		ar >> PenStyle;
 	}
 }
 
@@ -43,7 +45,7 @@ void Figure::Draw(CDC* dc) const {
 	CBrush cb;
 	cb.CreateSolidBrush(BGColor);
 	CPen cp;
-	cp.CreatePen(GetSWidth() > 0 ? PS_SOLID : PS_NULL,
+	cp.CreatePen(GetSWidth() > 0 ? GetSStyle() : PS_NULL,
 		GetSWidth(), GetSColor());
 	dc->SelectObject(cb);
 	dc->SelectObject(cp);
@@ -66,6 +68,10 @@ int Figure::GetSWidth() const {
 	return PenWidth;
 }
 
+int Figure::GetSStyle() const {
+	return PenStyle;
+}
+
 COLORREF Figure::GetBGColor() const {
 	return BGColor;
 }
@@ -84,6 +90,10 @@ void Figure::SetSColor(const COLORREF c) {
 
 void Figure::SetSWidth(const int w) {
 	PenWidth = w;
+}
+
+void Figure::SetSStyle(const int s) {
+	PenStyle = s;
 }
 
 int Figure::GetKind() const {

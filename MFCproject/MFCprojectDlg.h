@@ -31,6 +31,8 @@ private:
 
 	// controls
 	CComboBox* m_ShapeSelect = NULL;
+	CComboBox* m_WidthSelect = NULL;
+	CComboBox* m_StyleSelect = NULL;
 	CButton* m_EraseCB = NULL;
 	CButton* m_MoveCB = NULL;
 	CButton* m_TransformCB = NULL;
@@ -39,13 +41,13 @@ private:
 	CStatic* m_CoordsTxt = NULL;
 	CMFCColorButton* m_BGColorSelect = NULL;
 	CMFCColorButton* m_SColorSelect = NULL;
-	CComboBox* m_WidthSelect = NULL;
 	// menu controls
 	CMenu* m_EditMenu = NULL;
 
 	// helper functions
 	void DrawFig(int, CPoint, CPoint);
 	void DrawFig(int, CPoint, CPoint, int);
+	void SetSelectedProps(Figure*);
 	void AddAction(int, Figure*);
 	void RestoreFigure(Figure*);
 	void EnableDrawing();
@@ -102,4 +104,5 @@ public:
 	afx_msg void OnFigkindTransform();
 	afx_msg void OnFigkindCopy();
 	afx_msg void OnFigkindPaste();
+	afx_msg void OnCbnSelchangeCombo4();
 };
