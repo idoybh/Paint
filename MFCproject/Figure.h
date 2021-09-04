@@ -24,7 +24,6 @@ private:
 
 protected:
 	int kind = 0;
-	vector<CPoint> points;
 
 public:
 	DECLARE_SERIAL(Figure)   //!!! NO ";"  
@@ -49,5 +48,4 @@ public:
 	virtual void Redefine(CPoint p1, CPoint p2);
 	virtual bool isInside(const CPoint &P) const;
 	virtual void Shift(int dx, int dy);
-	virtual vector<CPoint> getPoints() const { return points; };
 };

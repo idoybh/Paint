@@ -9,14 +9,14 @@
 class Action : public CObject {
 private:
 	int kind;
-	Figure fig;
+	Figure* fig;
 
 public:
 	DECLARE_SERIAL(Action)
-	Action() : kind(0) { }; // for serialization
-	Action(int, Figure);
+	Action() : kind(0), fig(NULL) { }; // for serialization
+	Action(int, Figure*);
 	void Serialize(CArchive& ar);
 	int getKind() const;
-	Figure getFigure() const;
+	Figure* getFigure() const;
 };
 

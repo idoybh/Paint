@@ -145,13 +145,7 @@ void CMFCprojectDlg::OnLButtonDown(UINT nFlags, CPoint point)
 		switch (futureActionKind) {
 			default:
 			case ACTION_KIND_DRAW:
-				if (futureFigureKind != FIGURE_KIND_FREE_LINE) {
-					DrawFig(futureFigureKind, start, start);
-				} else {
-					figs.Add(new FreeLineF(start));
-					figs[figs.GetSize() - 1]->SetSColor(m_SColorSelect->GetColor());
-					figs[figs.GetSize() - 1]->SetSWidth(m_WidthSelect->GetCurSel());
-				}
+				DrawFig(futureFigureKind, start, start);
 				break;
 			case ACTION_KIND_ERASE:
 				for (int i = figs.GetSize() - 1; i >= 0; i--) {
@@ -385,7 +379,7 @@ void CMFCprojectDlg::OnFileLoad() {
 
 void CMFCprojectDlg::OnEditUndo() {
 	Action* act = actions.GetAt(actions.GetSize() - 1);
-	Figure* fig = &act->getFigure();
+	Figure* fig = act->getFigure();
 	switch (act->getKind()) {
 		case ACTION_KIND_DRAW:
 			for (int i = 0; i < figs.GetSize(); i++) {
@@ -399,12 +393,12 @@ void CMFCprojectDlg::OnEditUndo() {
 		case ACTION_KIND_ERASE:
 			RestoreFigure(fig);
 			redoActions.Add(new Action(ACTION_KIND_ERASE,
-				*figs.GetAt(figs.GetSize() - 1)));
+				figs.GetAt(figs.GetSize() - 1)));
 			break;
 		case ACTION_KIND_MOVE:
 			for (int i = 0; i < figs.GetSize(); i++) {
 				if (figs.GetAt(i)->getID() == fig->getID()) {
-					redoActions.Add(new Action(ACTION_KIND_MOVE, *figs.GetAt(i)));
+					redoActions.Add(new Action(ACTION_KIND_MOVE, figs.GetAt(i)));
 					figs.GetAt(i)->Redefine(fig->getP1(), fig->getP2());
 					break;
 				}
@@ -413,7 +407,7 @@ void CMFCprojectDlg::OnEditUndo() {
 		case ACTION_KIND_TRANSFORM:
 			for (int i = 0; i < figs.GetSize(); i++) {
 				if (figs.GetAt(i)->getID() == fig->getID()) {
-					redoActions.Add(new Action(ACTION_KIND_TRANSFORM, *figs.GetAt(i)));
+					redoActions.Add(new Action(ACTION_KIND_TRANSFORM, figs.GetAt(i)));
 					figs.GetAt(i)->SetBGColor(fig->GetBGColor());
 					figs.GetAt(i)->SetSColor(fig->GetSColor());
 					figs.GetAt(i)->SetSWidth(fig->GetSWidth());
@@ -430,12 +424,12 @@ void CMFCprojectDlg::OnEditUndo() {
 
 void CMFCprojectDlg::OnEditRedo() {
 	Action* act = redoActions.GetAt(redoActions.GetSize() - 1);
-	Figure* fig = &act->getFigure();
+	Figure* fig = act->getFigure();
 	switch (act->getKind()) {
 		case ACTION_KIND_DRAW:
 			RestoreFigure(fig);
 			actions.Add(new Action(ACTION_KIND_DRAW,
-				*figs.GetAt(figs.GetSize() - 1)));
+				figs.GetAt(figs.GetSize() - 1)));
 			break;
 		case ACTION_KIND_ERASE:
 			for (int i = 0; i < figs.GetSize(); i++) {
@@ -449,7 +443,7 @@ void CMFCprojectDlg::OnEditRedo() {
 		case ACTION_KIND_MOVE:
 			for (int i = 0; i < figs.GetSize(); i++) {
 				if (figs.GetAt(i)->getID() == fig->getID()) {
-					actions.Add(new Action(ACTION_KIND_MOVE, *figs.GetAt(i)));
+					actions.Add(new Action(ACTION_KIND_MOVE, figs.GetAt(i)));
 					figs.GetAt(i)->Redefine(fig->getP1(), fig->getP2());
 					break;
 				}
@@ -458,7 +452,7 @@ void CMFCprojectDlg::OnEditRedo() {
 		case ACTION_KIND_TRANSFORM:
 			for (int i = 0; i < figs.GetSize(); i++) {
 				if (figs.GetAt(i)->getID() == fig->getID()) {
-					actions.Add(new Action(ACTION_KIND_TRANSFORM, *figs.GetAt(i)));
+					actions.Add(new Action(ACTION_KIND_TRANSFORM, figs.GetAt(i)));
 					figs.GetAt(i)->SetBGColor(fig->GetBGColor());
 					figs.GetAt(i)->SetSColor(fig->GetSColor());
 					figs.GetAt(i)->SetSWidth(fig->GetSWidth());
@@ -506,6 +500,8 @@ void CMFCprojectDlg::DrawFig(int kind, CPoint p1, CPoint p2) {
 		case FIGURE_KIND_LINE:
 			figs.Add(new LineF(p1, p2));
 			break;
+		case FIGURE_KIND_FREE_LINE:
+			figs.Add(new FreeLineF(p1));
 	}
 	figs[figs.GetSize() - 1]->SetBGColor(m_BGColorSelect->GetColor());
 	figs[figs.GetSize() - 1]->SetSColor(m_SColorSelect->GetColor());
@@ -527,6 +523,8 @@ void CMFCprojectDlg::DrawFig(int kind, CPoint p1, CPoint p2, int ID) {
 		case FIGURE_KIND_LINE:
 			figs.Add(new LineF(p1, p2, ID));
 			break;
+		case FIGURE_KIND_FREE_LINE:
+			figs.Add(new FreeLineF(p1, ID));
 	}
 	figs[figs.GetSize() - 1]->SetBGColor(m_BGColorSelect->GetColor());
 	figs[figs.GetSize() - 1]->SetSColor(m_SColorSelect->GetColor());
@@ -534,7 +532,7 @@ void CMFCprojectDlg::DrawFig(int kind, CPoint p1, CPoint p2, int ID) {
 }
 
 void CMFCprojectDlg::AddAction(int kind, Figure* fig) {
-	actions.Add(new Action(kind, *fig));
+	actions.Add(new Action(kind, fig));
 	m_EditMenu->EnableMenuItem(ID_EDIT_UNDO, MF_ENABLED);
 	m_EditMenu->EnableMenuItem(ID_EDIT_REDO, MF_DISABLED);
 	if (!redoActions.IsEmpty()) redoActions.RemoveAll();
@@ -555,7 +553,7 @@ void CMFCprojectDlg::RestoreFigure(Figure* fig) {
 			figs.Add(new LineF(fig->getP1(), fig->getP2(), fig->getID()));
 			break;
 		case FIGURE_KIND_FREE_LINE:
-			figs.Add(new FreeLineF(fig->getPoints(), fig->getID()));
+			figs.Add(new FreeLineF(((FreeLineF*) fig)->getPoints(), fig->getID()));
 			break;
 	}
 	figs[figs.GetSize() - 1]->SetBGColor(fig->GetBGColor());

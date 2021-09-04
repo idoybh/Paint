@@ -53,20 +53,20 @@ bool TriangleF::isInside(const CPoint& P) const {
 	double PA = sqrt((P.x - A.x) * (P.x - A.x) + (P.y - A.y) * (P.y - A.y));
 
 	// S(ABC)
-	double d0 = (BA + BC + AC) / 2;
-	double ttlSpace = sqrt(d0 * (d0 - BA) * (d0 - BC) * (d0 - AC));
+	double d = (BA + BC + AC) / 2;
+	double ttlSpace = sqrt(d * (d - BA) * (d - BC) * (d - AC));
 
 	// S(PBC)
-	double d1 = (PB + PC + BC) / 2;
-	double s1 = sqrt(d1 * (d1 - PB) * (d1 - PC) * (d1 - BC));
+	d = (PB + PC + BC) / 2;
+	double s1 = sqrt(d * (d - PB) * (d - PC) * (d - BC));
 
 	// S(PBA)
-	double d2 = (PB + PA + BA) / 2;
-	double s2 = sqrt(d2 * (d2 - PB) * (d2 - PA) * (d2 - BA));
+	d = (PB + PA + BA) / 2;
+	double s2 = sqrt(d * (d - PB) * (d - PA) * (d - BA));
 
 	// S(PAC)
-	double d3 = (PA + PC + AC) / 2;
-	double s3 = sqrt(d3 * (d3 - PA) * (d3 - PC) * (d3 - AC));
+	d = (PA + PC + AC) / 2;
+	double s3 = sqrt(d * (d - PA) * (d - PC) * (d - AC));
 
 	// return true if the sum of all spaces = to the rectangle's space
 	double diff = abs(ttlSpace - (s1 + s2 + s3));

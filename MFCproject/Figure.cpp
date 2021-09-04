@@ -16,8 +16,6 @@ Figure::Figure(const Figure& obj) :
 	kind(obj.kind), BGColor(obj.BGColor),
 	SColor(obj.SColor), PenWidth(obj.PenWidth),
 	ID(obj.getID()) {
-	points.resize(obj.points.size());
-	points = obj.points;
 }
 
 void Figure::Serialize(CArchive& ar) {
@@ -26,24 +24,18 @@ void Figure::Serialize(CArchive& ar) {
 		ar << P1;
 		ar << P2;
 		ar << ID;
+		ar << kind;
 		ar << BGColor;
 		ar << SColor;
 		ar << PenWidth;
-		ar << (int) points.size();
-		for (auto i = points.begin(); i != points.end(); ++i)
-			ar << *i;
 	} else { // Loading, not storing
 		ar >> P1;
 		ar >> P2;
 		ar >> ID;
+		ar >> kind;
 		ar >> BGColor;
 		ar >> SColor;
 		ar >> PenWidth;
-		int size;
-		ar >> size;
-		points.resize(size);
-		for (int i = 0; i < size; i++)
-			ar >> points[i];
 	}
 }
 
