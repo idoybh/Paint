@@ -17,7 +17,8 @@ void TriangleF::Draw(CDC* dc) const
 	CBrush cb;
 	cb.CreateSolidBrush(GetBGColor());
 	CPen cp;
-	cp.CreatePen(PS_SOLID, GetSWidth(), GetSColor());
+	cp.CreatePen(GetSWidth() > 0 ? PS_SOLID : PS_NULL,
+		GetSWidth(), GetSColor());
 	dc->SelectObject(cb);
 	dc->SelectObject(cp);
 	CPoint p1 = getP1();

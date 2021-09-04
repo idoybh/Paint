@@ -397,6 +397,7 @@ void CMFCprojectDlg::OnFileNew() {
 	m_RedoBtn->EnableWindow(FALSE);
 	figs.RemoveAll();
 	Invalidate();
+	isSaved = true;
 }
 
 void CMFCprojectDlg::OnFileSave() {

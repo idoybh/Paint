@@ -21,7 +21,8 @@ void EllipseF::Draw(CDC* dc) const
 	CBrush cb;
 	cb.CreateSolidBrush(GetBGColor());
 	CPen cp;
-	cp.CreatePen(PS_SOLID, GetSWidth(), GetSColor());
+	cp.CreatePen(GetSWidth() > 0 ? PS_SOLID : PS_NULL,
+		GetSWidth(), GetSColor());
 	dc->SelectObject(cb);
 	dc->SelectObject(cp);
 	dc->Ellipse(p1.x, p1.y, p2.x, p2.y);

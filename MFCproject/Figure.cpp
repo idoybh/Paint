@@ -43,7 +43,8 @@ void Figure::Draw(CDC* dc) const {
 	CBrush cb;
 	cb.CreateSolidBrush(BGColor);
 	CPen cp;
-	cp.CreatePen(PS_SOLID, PenWidth, SColor);
+	cp.CreatePen(GetSWidth() > 0 ? PS_SOLID : PS_NULL,
+		GetSWidth(), GetSColor());
 	dc->SelectObject(cb);
 	dc->SelectObject(cp);
 	dc->Rectangle(P1.x, P1.y, P2.x, P2.y);
