@@ -191,7 +191,7 @@ void CMFCprojectDlg::OnLButtonDown(UINT nFlags, CPoint point)
 				}
 				break;
 			case ACTION_KIND_MOVE:
-				for (int i = 0; i < figs.GetSize(); i++) {
+				for (int i = figs.GetSize() - 1; i >= 0; i--) {
 					Figure* fig = figs.GetAt(i);
 					if (fig->isInside(point)) {
 						movingFig = fig;
@@ -201,7 +201,7 @@ void CMFCprojectDlg::OnLButtonDown(UINT nFlags, CPoint point)
 				}
 				break;
 			case ACTION_KIND_TRANSFORM:
-				for (int i = 0; i < figs.GetSize(); i++) {
+				for (int i = figs.GetSize() - 1; i >= 0; i--) {
 					Figure* fig = figs.GetAt(i);
 					if (fig->isInside(point)) {
 						AddAction(ACTION_KIND_TRANSFORM, figs.GetAt(i));
@@ -640,7 +640,7 @@ bool CMFCprojectDlg::isInsideCanvas(const CPoint& pnt) {
 
 int CMFCprojectDlg::AskSave() {
 	if (isSaved) return IDYES;
-	CString msg(_T("Unsaved changes detected.\nSave before continuing?"));
+	CString msg(L"Unsaved changes detected.\nSave before continuing?");
 	int res = AfxMessageBox(msg, MB_YESNOCANCEL, 0);
 	switch (res) {
 		default:
