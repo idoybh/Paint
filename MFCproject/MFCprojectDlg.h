@@ -33,6 +33,8 @@ private:
 	CButton* m_EraseCB = NULL;
 	CButton* m_MoveCB = NULL;
 	CButton* m_TransformCB = NULL;
+	CButton* m_UndoBtn = NULL;
+	CButton* m_RedoBtn = NULL;
 	CStatic* m_CoordsTxt = NULL;
 	CMFCColorButton* m_BGColorSelect = NULL;
 	CMFCColorButton* m_SColorSelect = NULL;
@@ -80,6 +82,8 @@ public:
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
 	afx_msg void OnMouseMove(UINT nFlags, CPoint point);
 	afx_msg void OnCbnSelchangeCombo2();
+	afx_msg void OnBnClickedButton1();
+	afx_msg void OnBnClickedButton2();
 	afx_msg void OnBnClickedCheck1();
 	afx_msg void OnBnClickedCheck2();
 	afx_msg void OnCbnSelchangeCombo3();

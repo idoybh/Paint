@@ -38,6 +38,8 @@ BEGIN_MESSAGE_MAP(CMFCprojectDlg, CDialogEx)
 	ON_WM_MOUSEMOVE()
 	ON_CBN_SELCHANGE(IDC_COMBO2, &CMFCprojectDlg::OnCbnSelchangeCombo2)
 	ON_CBN_SELCHANGE(IDC_COMBO3, &CMFCprojectDlg::OnCbnSelchangeCombo3)
+	ON_BN_CLICKED(IDC_BUTTON1, &CMFCprojectDlg::OnBnClickedButton1)
+	ON_BN_CLICKED(IDC_BUTTON2, &CMFCprojectDlg::OnBnClickedButton2)
 	ON_BN_CLICKED(IDC_MFCCOLORBUTTON1, &CMFCprojectDlg::OnBnClickedMfccolorbutton1)
 	ON_BN_CLICKED(IDC_MFCCOLORBUTTON2, &CMFCprojectDlg::OnBnClickedMfccolorbutton2)
 	ON_BN_CLICKED(IDC_CHECK1, &CMFCprojectDlg::OnBnClickedCheck1)
@@ -71,6 +73,8 @@ BOOL CMFCprojectDlg::OnInitDialog()
 	m_EraseCB = (CButton*)GetDlgItem(IDC_CHECK1);
 	m_MoveCB = (CButton*)GetDlgItem(IDC_CHECK2);
 	m_TransformCB = (CButton*)GetDlgItem(IDC_CHECK3);
+	m_UndoBtn = (CButton*)GetDlgItem(IDC_BUTTON1);
+	m_RedoBtn = (CButton*)GetDlgItem(IDC_BUTTON2);
 	m_CoordsTxt = (CStatic*)GetDlgItem(IDC_STATIC2);
 	m_BGColorSelect = (CMFCColorButton*)GetDlgItem(IDC_MFCCOLORBUTTON1);
 	m_BGColorSelect->SetColor(0xFFFFFF);
@@ -80,6 +84,9 @@ BOOL CMFCprojectDlg::OnInitDialog()
 	m_WidthSelect->SetCurSel(1);
 	// menu
 	m_EditMenu = GetMenu()->GetSubMenu(1);
+
+	m_UndoBtn->EnableWindow(FALSE);
+	m_RedoBtn->EnableWindow(FALSE);
 
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
@@ -319,6 +326,15 @@ void CMFCprojectDlg::OnBnClickedMfccolorbutton2() {
 		EnableDrawing();
 }
 
+void CMFCprojectDlg::OnBnClickedButton1() {
+	OnEditUndo();
+}
+
+
+void CMFCprojectDlg::OnBnClickedButton2() {
+	OnEditRedo();
+}
+
 void CMFCprojectDlg::OnBnClickedCheck1() {
 	bool checked = m_EraseCB->GetCheck() == BST_CHECKED;
 	if (checked) {
@@ -360,6 +376,8 @@ void CMFCprojectDlg::OnFileNew() {
 	redoActions.RemoveAll();
 	m_EditMenu->EnableMenuItem(ID_EDIT_UNDO, MF_DISABLED);
 	m_EditMenu->EnableMenuItem(ID_EDIT_REDO, MF_DISABLED);
+	m_UndoBtn->EnableWindow(FALSE);
+	m_RedoBtn->EnableWindow(FALSE);
 	figs.RemoveAll();
 	Invalidate();
 }
@@ -436,8 +454,12 @@ void CMFCprojectDlg::OnEditUndo() {
 	}
 	Invalidate();
 	actions.RemoveAt(actions.GetSize() - 1);
-	if (actions.IsEmpty()) m_EditMenu->EnableMenuItem(ID_EDIT_UNDO, MF_DISABLED);
+	if (actions.IsEmpty()) {
+		m_EditMenu->EnableMenuItem(ID_EDIT_UNDO, MF_DISABLED);
+		m_UndoBtn->EnableWindow(FALSE);
+	}
 	m_EditMenu->EnableMenuItem(ID_EDIT_REDO, MF_ENABLED);
+	m_RedoBtn->EnableWindow(TRUE);
 }
 
 void CMFCprojectDlg::OnEditRedo() {
@@ -483,7 +505,11 @@ void CMFCprojectDlg::OnEditRedo() {
 	Invalidate();
 	redoActions.RemoveAt(redoActions.GetSize() - 1);
 	m_EditMenu->EnableMenuItem(ID_EDIT_UNDO, MF_ENABLED);
-	if (redoActions.IsEmpty()) m_EditMenu->EnableMenuItem(ID_EDIT_REDO, MF_DISABLED);
+	m_UndoBtn->EnableWindow(TRUE);
+	if (redoActions.IsEmpty()) {
+		m_EditMenu->EnableMenuItem(ID_EDIT_REDO, MF_DISABLED);
+		m_RedoBtn->EnableWindow(FALSE);
+	}
 }
 
 // context menu
@@ -554,6 +580,8 @@ void CMFCprojectDlg::AddAction(int kind, Figure* fig) {
 	actions.Add(new Action(kind, fig));
 	m_EditMenu->EnableMenuItem(ID_EDIT_UNDO, MF_ENABLED);
 	m_EditMenu->EnableMenuItem(ID_EDIT_REDO, MF_DISABLED);
+	m_UndoBtn->EnableWindow(TRUE);
+	m_RedoBtn->EnableWindow(FALSE);
 	if (!redoActions.IsEmpty()) redoActions.RemoveAll();
 	isSaved = false;
 }
@@ -600,8 +628,9 @@ void CMFCprojectDlg::LoadFile(CString filename) {
 		actions.IsEmpty() ? MF_DISABLED : MF_ENABLED);
 	m_EditMenu->EnableMenuItem(ID_EDIT_REDO,
 		redoActions.IsEmpty() ? MF_DISABLED : MF_ENABLED);
+	m_UndoBtn->EnableWindow(!actions.IsEmpty());
+	m_RedoBtn->EnableWindow(!redoActions.IsEmpty());
 	isSaved = true;
-
 }
 
 bool CMFCprojectDlg::isInsideCanvas(const CPoint& pnt) {
