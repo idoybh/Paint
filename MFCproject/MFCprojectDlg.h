@@ -16,7 +16,7 @@
 class CMFCprojectDlg : public CDialogEx
 {
 private:
-	CPoint start, end;
+	CPoint start, end, cursorP;
 	int futureFigureKind = FIGURE_KIND_RECTANGLE;
 	int futureActionKind = ACTION_KIND_DRAW;
 	int contextFigIndex = -1;
@@ -27,6 +27,7 @@ private:
 	bool isPressed = false;
 	bool isSaved = true;
 	Figure* movingFig = NULL;
+	Figure* copyFig = NULL;
 
 	// controls
 	CComboBox* m_ShapeSelect = NULL;
@@ -99,4 +100,6 @@ public:
 	// context menu
 	afx_msg void OnFigkindErase();
 	afx_msg void OnFigkindTransform();
+	afx_msg void OnFigkindCopy();
+	afx_msg void OnFigkindPaste();
 };

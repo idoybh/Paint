@@ -52,6 +52,8 @@ BEGIN_MESSAGE_MAP(CMFCprojectDlg, CDialogEx)
 	ON_BN_CLICKED(ID_EDIT_REDO, &CMFCprojectDlg::OnEditRedo)
 	ON_COMMAND(ID_FIGKIND_ERASE, &CMFCprojectDlg::OnFigkindErase)
 	ON_COMMAND(ID_FIGKIND_TRANSFORM, &CMFCprojectDlg::OnFigkindTransform)
+	ON_COMMAND(ID_FIGKIND_COPY, &CMFCprojectDlg::OnFigkindCopy)
+	ON_COMMAND(ID_FIGKIND_PASTE, &CMFCprojectDlg::OnFigkindPaste)
 END_MESSAGE_MAP()
 
 
@@ -153,18 +155,33 @@ void CMFCprojectDlg::OnCancel() {
 }
 
 void CMFCprojectDlg::OnRButtonDown(UINT nFlags, CPoint point) {
+	cursorP = point;
+	bool found = false;
 	for (int i = figs.GetSize() - 1; i >= 0; i--) {
 		Figure* fig = figs.GetAt(i);
 		if (fig->isInside(point)) {
 			// open up context menu for the current figure
+			found = true;
 			contextFigIndex = i;
-			CMenu menu;
-			menu.LoadMenuW(IDR_MENU2);
-			CMenu* pPopup = menu.GetSubMenu(0);
 			ClientToScreen(&point);
-			pPopup->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y, this);
+			CMenu cmenu;
+			cmenu.LoadMenuW(IDR_MENU2);
+			CMenu* popup = cmenu.GetSubMenu(0);
+			popup->EnableMenuItem(ID_FIGKIND_PASTE, copyFig != NULL ? MF_ENABLED : MF_DISABLED);
+			popup->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y, this);
 			break;
 		}
+	}
+	if (!found && copyFig != NULL) {
+		ClientToScreen(&point);
+		CMenu cmenu;
+		cmenu.LoadMenuW(IDR_MENU2);
+		CMenu* popup = cmenu.GetSubMenu(0);
+		popup->EnableMenuItem(ID_FIGKIND_ERASE, MF_DISABLED);
+		popup->EnableMenuItem(ID_FIGKIND_TRANSFORM, MF_DISABLED);
+		popup->EnableMenuItem(ID_FIGKIND_COPY, MF_DISABLED);
+		popup->EnableMenuItem(ID_FIGKIND_PASTE, MF_ENABLED);
+		popup->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y, this);
 	}
 	CDialogEx::OnRButtonDown(nFlags, point);
 }
@@ -525,6 +542,56 @@ void CMFCprojectDlg::OnFigkindTransform() {
 	figs.GetAt(contextFigIndex)->SetBGColor(m_BGColorSelect->GetColor());
 	figs.GetAt(contextFigIndex)->SetSColor(m_SColorSelect->GetColor());
 	figs.GetAt(contextFigIndex)->SetSWidth(m_WidthSelect->GetCurSel());
+	Invalidate();
+}
+
+void CMFCprojectDlg::OnFigkindCopy() {
+	copyFig = figs.GetAt(contextFigIndex);
+}
+
+
+void CMFCprojectDlg::OnFigkindPaste() {
+	if (copyFig == NULL) return;
+	switch (copyFig->GetKind()) {
+		case FIGURE_KIND_RECTANGLE:
+			figs.Add(new RectangleF(copyFig->getP1(), copyFig->getP2()));
+			break;
+		case FIGURE_KIND_ELLIPSE:
+			figs.Add(new EllipseF(copyFig->getP1(), copyFig->getP2()));
+			break;
+		case FIGURE_KIND_TRIANGLE:
+			figs.Add(new TriangleF(copyFig->getP1(), copyFig->getP2()));
+			break;
+		case FIGURE_KIND_LINE:
+			figs.Add(new LineF(copyFig->getP1(), copyFig->getP2()));
+			break;
+		case FIGURE_KIND_FREE_LINE:
+			figs.Add(new FreeLineF(((FreeLineF*)copyFig)->getPoints()));
+			break;
+	}
+	// move it to the cursor position
+	CPoint p1 = copyFig->getP1();
+	CPoint p2 = copyFig->getP2();
+	int dx = p2.x - p1.x;
+	int dy = p2.y - p1.y;
+	p2.x = cursorP.x + dx; p2.y = cursorP.y + dy;
+	if (!isInsideCanvas(p2)) { // stay inside cnvas
+		if (p2.x > 787) {
+			dx = p2.x - 787;
+			p2.x -= dx; cursorP.x -= dx;
+		}
+		if (p2.y > 480) {
+			dy = p2.y - 480;
+			p2.y -= dy; cursorP.y -= dy;
+		}
+	}
+	figs[figs.GetSize() - 1]->Redefine(cursorP, p2);
+	// restore properties
+	figs[figs.GetSize() - 1]->SetBGColor(copyFig->GetBGColor());
+	figs[figs.GetSize() - 1]->SetSColor(copyFig->GetSColor());
+	figs[figs.GetSize() - 1]->SetSWidth(copyFig->GetSWidth());
+
+	AddAction(ACTION_KIND_DRAW, figs[figs.GetSize() - 1]);
 	Invalidate();
 }
 
