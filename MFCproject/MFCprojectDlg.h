@@ -25,6 +25,7 @@ private:
 	CTypedPtrArray<CObArray, Action*> redoActions;
 
 	bool isPressed = false;
+	bool isSaved = true;
 	Figure* movingFig = NULL;
 
 	// controls
@@ -46,6 +47,7 @@ private:
 	void RestoreFigure(Figure*);
 	void EnableDrawing();
 	bool isInsideCanvas(const CPoint&);
+	int AskSave();
 
 // Construction
 public:
@@ -68,6 +70,7 @@ protected:
 	virtual BOOL OnInitDialog();
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
+	afx_msg void OnCancel();
 	DECLARE_MESSAGE_MAP()
 public:
 	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);

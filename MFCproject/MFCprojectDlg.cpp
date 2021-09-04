@@ -120,6 +120,11 @@ HCURSOR CMFCprojectDlg::OnQueryDragIcon() {
 	return static_cast<HCURSOR>(m_hIcon);
 }
 
+void CMFCprojectDlg::OnCancel() {
+	if (AskSave() == IDCANCEL) return;
+	CDialog::OnCancel();
+}
+
 void CMFCprojectDlg::OnRButtonDown(UINT nFlags, CPoint point) {
 	for (int i = figs.GetSize() - 1; i >= 0; i--) {
 		Figure* fig = figs.GetAt(i);
@@ -330,6 +335,7 @@ void CMFCprojectDlg::OnBnClickedCheck3() {
 // menu
 
 void CMFCprojectDlg::OnFileNew() {
+	if (AskSave() == IDCANCEL) return;
 	actions.RemoveAll();
 	redoActions.RemoveAll();
 	m_EditMenu->EnableMenuItem(ID_EDIT_UNDO, MF_DISABLED);
@@ -352,10 +358,12 @@ void CMFCprojectDlg::OnFileSave() {
 		redoActions.Serialize(ar);
 		ar.Close();
 		file.Close();
+		isSaved = true;
 	}
 }
 
 void CMFCprojectDlg::OnFileLoad() {
+	if (AskSave() == IDCANCEL) return;
 	// TRUE to LOAD
 	CFileDialog dlg(TRUE, _T(".figs"), NULL, 0, _T("Figures (*.figs)|*.figs|All Files (*.*)|*.*||"));
 	CString filename;
@@ -374,12 +382,14 @@ void CMFCprojectDlg::OnFileLoad() {
 			actions.IsEmpty() ? MF_DISABLED : MF_ENABLED);
 		m_EditMenu->EnableMenuItem(ID_EDIT_REDO,
 			redoActions.IsEmpty() ? MF_DISABLED : MF_ENABLED);
+		isSaved = true;
 	}
 }
 
 void CMFCprojectDlg::OnEditUndo() {
 	Action* act = actions.GetAt(actions.GetSize() - 1);
 	Figure* fig = act->getFigure();
+	isSaved = false;
 	switch (act->getKind()) {
 		case ACTION_KIND_DRAW:
 			for (int i = 0; i < figs.GetSize(); i++) {
@@ -425,6 +435,7 @@ void CMFCprojectDlg::OnEditUndo() {
 void CMFCprojectDlg::OnEditRedo() {
 	Action* act = redoActions.GetAt(redoActions.GetSize() - 1);
 	Figure* fig = act->getFigure();
+	isSaved = false;
 	switch (act->getKind()) {
 		case ACTION_KIND_DRAW:
 			RestoreFigure(fig);
@@ -536,6 +547,7 @@ void CMFCprojectDlg::AddAction(int kind, Figure* fig) {
 	m_EditMenu->EnableMenuItem(ID_EDIT_UNDO, MF_ENABLED);
 	m_EditMenu->EnableMenuItem(ID_EDIT_REDO, MF_DISABLED);
 	if (!redoActions.IsEmpty()) redoActions.RemoveAll();
+	isSaved = false;
 }
 
 void CMFCprojectDlg::RestoreFigure(Figure* fig) {
@@ -570,4 +582,24 @@ void CMFCprojectDlg::EnableDrawing() {
 bool CMFCprojectDlg::isInsideCanvas(const CPoint& pnt) {
 	return (pnt.x >= 17 && pnt.y >= 80
 		&& pnt.x <= 787 && pnt.y <= 480);
+}
+
+int CMFCprojectDlg::AskSave() {
+	if (isSaved) return IDYES;
+	CString msg(_T("Unsaved changes detected.\nSave before continuing?"));
+	int res = AfxMessageBox(msg, MB_YESNOCANCEL, 0);
+	switch (res) {
+		default:
+		case IDYES:
+			OnFileSave();
+			if (isSaved)
+				return IDYES;
+			else
+				return IDCANCEL;
+			break;
+		case IDNO:
+		case IDCANCEL:
+			return res;
+			break;
+	}
 }
