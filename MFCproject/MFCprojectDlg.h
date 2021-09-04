@@ -46,6 +46,7 @@ private:
 	void AddAction(int, Figure*);
 	void RestoreFigure(Figure*);
 	void EnableDrawing();
+	void LoadFile(CString filename);
 	bool isInsideCanvas(const CPoint&);
 	int AskSave();
 
@@ -70,6 +71,7 @@ protected:
 	virtual BOOL OnInitDialog();
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
+	afx_msg void OnDropFiles(HDROP hDropInfo);
 	afx_msg void OnCancel();
 	DECLARE_MESSAGE_MAP()
 public:

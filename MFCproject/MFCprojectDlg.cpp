@@ -28,6 +28,7 @@ void CMFCprojectDlg::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CMFCprojectDlg, CDialogEx)
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
+	ON_WM_DROPFILES()
 	ON_WM_RBUTTONDOWN()
 	ON_WM_LBUTTONDOWN()
 	ON_WM_LBUTTONUP()
@@ -57,6 +58,7 @@ END_MESSAGE_MAP()
 BOOL CMFCprojectDlg::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
+	DragAcceptFiles();
 
 	// Set the icon for this dialog.  The framework does this automatically
 	//  when the application's main window is not a dialog
@@ -118,6 +120,24 @@ void CMFCprojectDlg::OnPaint()
 //  the minimized window.
 HCURSOR CMFCprojectDlg::OnQueryDragIcon() {
 	return static_cast<HCURSOR>(m_hIcon);
+}
+
+void CMFCprojectDlg::OnDropFiles(HDROP drop) {
+	CString filename;
+	DWORD buffer = 0;
+	UINT noFiles = DragQueryFile(drop, 0xFFFFFFFF, NULL, 0);
+	// If more than one, only use the first
+	if (noFiles > 0) {
+		// Get the buffer size for the first filename
+		buffer = DragQueryFile(drop, 0, NULL, 0);
+		// Get path and name of the first file
+		DragQueryFile(drop, 0, filename.GetBuffer(buffer + 1), buffer + 1);
+		filename.ReleaseBuffer();
+		
+		if (AskSave() == IDCANCEL) return;
+		LoadFile(filename);
+	}
+	DragFinish(drop);
 }
 
 void CMFCprojectDlg::OnCancel() {
@@ -370,19 +390,7 @@ void CMFCprojectDlg::OnFileLoad() {
 	if (dlg.DoModal() == IDOK)
 	{
 		filename = dlg.GetPathName(); // return full path and filename
-		CFile file(filename, CFile::modeRead);
-		CArchive ar(&file, CArchive::load);
-		figs.Serialize(ar);
-		actions.Serialize(ar);
-		redoActions.Serialize(ar);
-		ar.Close();
-		file.Close();
-		Invalidate();
-		m_EditMenu->EnableMenuItem(ID_EDIT_UNDO,
-			actions.IsEmpty() ? MF_DISABLED : MF_ENABLED);
-		m_EditMenu->EnableMenuItem(ID_EDIT_REDO,
-			redoActions.IsEmpty() ? MF_DISABLED : MF_ENABLED);
-		isSaved = true;
+		LoadFile(filename);
 	}
 }
 
@@ -577,6 +585,23 @@ void CMFCprojectDlg::EnableDrawing() {
 	m_EraseCB->SetCheck(BST_UNCHECKED);
 	m_MoveCB->SetCheck(BST_UNCHECKED);
 	futureActionKind = ACTION_KIND_DRAW;
+}
+
+void CMFCprojectDlg::LoadFile(CString filename) {
+	CFile file(filename, CFile::modeRead);
+	CArchive ar(&file, CArchive::load);
+	figs.Serialize(ar);
+	actions.Serialize(ar);
+	redoActions.Serialize(ar);
+	ar.Close();
+	file.Close();
+	Invalidate();
+	m_EditMenu->EnableMenuItem(ID_EDIT_UNDO,
+		actions.IsEmpty() ? MF_DISABLED : MF_ENABLED);
+	m_EditMenu->EnableMenuItem(ID_EDIT_REDO,
+		redoActions.IsEmpty() ? MF_DISABLED : MF_ENABLED);
+	isSaved = true;
+
 }
 
 bool CMFCprojectDlg::isInsideCanvas(const CPoint& pnt) {
