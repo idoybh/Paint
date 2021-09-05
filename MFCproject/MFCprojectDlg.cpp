@@ -712,8 +712,12 @@ void CMFCprojectDlg::LoadFile(CString filename) {
 }
 
 bool CMFCprojectDlg::isInsideCanvas(const CPoint& pnt) {
-	return (pnt.x >= 17 && pnt.y >= 80
-		&& pnt.x <= 787 && pnt.y <= 480);
+	CWnd* canvas = GetDlgItem(IDC_STATIC6);
+	CRect rect;
+	canvas->GetWindowRect(rect);
+	ScreenToClient(rect);
+	return (pnt.x >= rect.TopLeft().x + 5 && pnt.y >= rect.TopLeft().y + 5
+		&& pnt.x <= rect.BottomRight().x - 5 && pnt.y <= rect.BottomRight().y - 5);
 }
 
 int CMFCprojectDlg::AskSave() {

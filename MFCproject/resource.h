@@ -13,13 +13,13 @@
 #define IDC_COMBO2                      1010
 #define IDC_COMBO3                      1011
 #define IDC_COMBO4                      1012
-#define IDC_COMBO5                      1012
 #define IDC_CHECK1                      1013
 #define IDC_STATIC2                     1014
 #define IDC_CHECK2                      1015
 #define IDC_MFCCOLORBUTTON1             1016
 #define IDC_MFCCOLORBUTTON2             1017
 #define IDC_CHECK3                      1018
+#define IDC_STATIC6                     1023
 #define ID_FILE_SAVE32771               32771
 #define ID_FILE_LOAD                    32772
 #define ID_FILE_NEW32773                32773
@@ -37,7 +37,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        133
 #define _APS_NEXT_COMMAND_VALUE         32781
-#define _APS_NEXT_CONTROL_VALUE         1023
+#define _APS_NEXT_CONTROL_VALUE         1024
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
