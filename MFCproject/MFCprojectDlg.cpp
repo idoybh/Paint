@@ -231,7 +231,6 @@ void CMFCprojectDlg::OnLButtonDown(UINT nFlags, CPoint point)
 	CDialogEx::OnLButtonDown(nFlags, point);
 }
 
-
 void CMFCprojectDlg::OnLButtonUp(UINT nFlags, CPoint point)
 {
 	if (isPressed) {
@@ -259,7 +258,6 @@ void CMFCprojectDlg::OnLButtonUp(UINT nFlags, CPoint point)
 	}
 	CDialogEx::OnLButtonUp(nFlags, point);
 }
-
 
 void CMFCprojectDlg::OnMouseMove(UINT nFlags, CPoint point)
 {
@@ -561,7 +559,6 @@ void CMFCprojectDlg::OnFigkindTransform() {
 void CMFCprojectDlg::OnFigkindCopy() {
 	copyFig = figs.GetAt(contextFigIndex);
 }
-
 
 void CMFCprojectDlg::OnFigkindPaste() {
 	if (copyFig == NULL) return;
