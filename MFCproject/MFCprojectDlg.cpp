@@ -322,8 +322,11 @@ void CMFCprojectDlg::OnCbnSelchangeCombo2() {
 	if (futureFigureKind == FIGURE_KIND_FREE_LINE) {
 		m_StyleSelect->SetCurSel(0);
 		m_StyleSelect->EnableWindow(FALSE);
-	} else if (m_WidthSelect->GetCurSel() == 1) {
-		m_StyleSelect->EnableWindow(TRUE);
+		m_BGColorSelect->EnableWindow(FALSE);
+	} else {
+		if (m_WidthSelect->GetCurSel() == 1)
+			m_StyleSelect->EnableWindow(TRUE);
+		m_BGColorSelect->EnableWindow(TRUE);
 	}
 }
 
@@ -585,7 +588,7 @@ void CMFCprojectDlg::OnFigkindPaste() {
 	int dx = p2.x - p1.x;
 	int dy = p2.y - p1.y;
 	p2.x = cursorP.x + dx; p2.y = cursorP.y + dy;
-	if (!isInsideCanvas(p2)) { // stay inside cnvas
+	if (!isInsideCanvas(p2)) { // stay inside canvas
 		if (p2.x > 787) {
 			dx = p2.x - 787;
 			p2.x -= dx; cursorP.x -= dx;
