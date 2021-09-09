@@ -684,7 +684,7 @@ void CMFCprojectDlg::RestoreFigure(Figure* fig) {
 	figs[figs.GetSize() - 1]->SetBGColor(fig->GetBGColor());
 	figs[figs.GetSize() - 1]->SetSColor(fig->GetSColor());
 	figs[figs.GetSize() - 1]->SetSWidth(fig->GetSWidth());
-	figs[figs.GetSize() - 1]->SetSStyle(fig->GetSWidth());
+	figs[figs.GetSize() - 1]->SetSStyle(fig->GetSStyle());
 }
 
 void CMFCprojectDlg::EnableDrawing() {

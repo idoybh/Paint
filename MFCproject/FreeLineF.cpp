@@ -54,7 +54,6 @@ void FreeLineF::Draw(CDC* dc) const {
 	CPen cp;
 	cp.CreatePen(PS_SOLID, GetSWidth(), GetSColor());
 	dc->SelectObject(cp);
-	bool from = true;
 	CPoint prev = *points.begin();
 	for (auto i = points.begin(); i != points.end(); ++i) {
 		CPoint curr = *i;
