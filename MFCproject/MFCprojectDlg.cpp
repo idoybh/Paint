@@ -137,7 +137,7 @@ void CMFCprojectDlg::OnPaint()
 		mDC.CreateCompatibleDC(&dc);
 		mBitmap.CreateCompatibleBitmap(&dc, rect.right, rect.bottom);
 		CBitmap* oBitmap = (CBitmap*)mDC.SelectObject(&mBitmap);
-		mDC.FillSolidRect(0, 0, rect.right, rect.bottom, RGB(240, 240, 240));
+		mDC.FillSolidRect(0, 0, rect.right, rect.bottom, GetSysColor(COLOR_3DFACE));
 
 		for (int i = 0; i < figs.GetSize(); i++)
 			figs[i]->Draw(&mDC);
