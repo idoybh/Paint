@@ -34,8 +34,8 @@ bool EllipseF::isInside(const CPoint& P) const {
 
 	CPoint p1 = getP1();
 	CPoint p2 = getP2();
-	double centerX = p1.x + (static_cast<double>(p2.x) - p1.x) / 2;
-	double centerY = p1.y + (static_cast<double>(p2.y) - p1.y) / 2;
+	double centerX = p1.x + (p2.x - p1.x) / 2;
+	double centerY = p1.y + (p2.y - p1.y) / 2;
 	double r1 = (p2.x - p1.x) / 2;
 	double r2 = (p2.y - p1.y) / 2;
 	double res = ((P.x - centerX) * (P.x - centerX)) / (r1 * r1) +

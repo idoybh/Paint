@@ -161,12 +161,12 @@ void CMFCprojectDlg::OnRButtonDown(UINT nFlags, CPoint point) {
 	CMenu* popup = cmenu.GetSubMenu(0);
 	cursorP = point;
 	bool found = false;
-	for (int i = figs.GetSize() - 1; i >= 0; i--) {
+	for (INT_PTR i = figs.GetSize() - 1; i >= 0; i--) {
 		Figure* fig = figs.GetAt(i);
 		if (fig->isInside(point)) {
 			// open up context menu for the current figure
 			found = true;
-			contextFigIndex = i;
+			contextFigIndex = (int) i;
 			ClientToScreen(&point);
 			popup->EnableMenuItem(ID_FIGKIND_PASTE, copyFig != NULL ? MF_ENABLED : MF_DISABLED);
 			popup->TrackPopupMenu(TPM_LEFTALIGN | TPM_RIGHTBUTTON, point.x, point.y, this);
@@ -195,7 +195,7 @@ void CMFCprojectDlg::OnLButtonDown(UINT nFlags, CPoint point)
 				DrawFig(futureFigureKind, start, start);
 				break;
 			case ACTION_KIND_ERASE:
-				for (int i = figs.GetSize() - 1; i >= 0; i--) {
+				for (INT_PTR i = figs.GetSize() - 1; i >= 0; i--) {
 					Figure* fig = figs.GetAt(i);
 					if (fig->isInside(point)) {
 						AddAction(ACTION_KIND_ERASE, fig);
@@ -206,7 +206,7 @@ void CMFCprojectDlg::OnLButtonDown(UINT nFlags, CPoint point)
 				}
 				break;
 			case ACTION_KIND_MOVE:
-				for (int i = figs.GetSize() - 1; i >= 0; i--) {
+				for (INT_PTR i = figs.GetSize() - 1; i >= 0; i--) {
 					Figure* fig = figs.GetAt(i);
 					if (fig->isInside(point)) {
 						movingFig = fig;
@@ -216,7 +216,7 @@ void CMFCprojectDlg::OnLButtonDown(UINT nFlags, CPoint point)
 				}
 				break;
 			case ACTION_KIND_TRANSFORM:
-				for (int i = figs.GetSize() - 1; i >= 0; i--) {
+				for (INT_PTR i = figs.GetSize() - 1; i >= 0; i--) {
 					Figure* fig = figs.GetAt(i);
 					if (fig->isInside(point)) {
 						AddAction(ACTION_KIND_TRANSFORM, figs.GetAt(i));
@@ -280,7 +280,7 @@ void CMFCprojectDlg::OnMouseMove(UINT nFlags, CPoint point)
 				Invalidate(); //simulates the WM_PAINT message to redraw window
 				break;
 			case ACTION_KIND_ERASE:
-				for (int i = figs.GetSize() - 1; i >= 0; i--) {
+				for (INT_PTR i = figs.GetSize() - 1; i >= 0; i--) {
 					Figure* fig = figs.GetAt(i);
 					if (fig->isInside(point)) {
 						AddAction(ACTION_KIND_ERASE, fig);
@@ -293,8 +293,8 @@ void CMFCprojectDlg::OnMouseMove(UINT nFlags, CPoint point)
 			case ACTION_KIND_MOVE:
 				if (movingFig != NULL) {
 					end = point;
-					double deltaX = end.x - start.x;
-					double deltaY = end.y - start.y;
+					long deltaX = end.x - start.x;
+					long deltaY = end.y - start.y;
 					// avoid moving out of canvas
 					CPoint fPTL = movingFig->getP1().x < movingFig->getP2().x ?
 						movingFig->getP1() : movingFig->getP2();
