@@ -46,15 +46,65 @@ private:
 	CMenu* m_EditMenu = NULL;
 
 	// helper functions
+
+	/**
+	Draws a figure
+	@param kind the figure kind
+	@param p1 Top left corner
+	@param p2 Bottom right corner
+	*/
 	void DrawFig(int, CPoint, CPoint);
+
+	/**
+	Draws a figure with a specific ID
+	@param kind the figure kind
+	@param p1 Top left corner
+	@param p2 Bottom right corner
+	@param ID The figure ID
+	*/
 	void DrawFig(int, CPoint, CPoint, int);
+
+	/**
+	Sets the figure style using the current selected controls
+	*/
 	void SetSelectedProps(Figure*);
+
+	/**
+	Adds an undo action, handles menu enablement
+	*/
 	void AddAction(int, Figure*);
+
+	/**
+	Restores a Figure
+	@param fig A pointer to the restored Figure
+	*/
 	void RestoreFigure(Figure*);
+
+	/**
+	Re-enables drawing controls
+	*/
 	void EnableDrawing();
+
+	/**
+	Loads a file, handles control enablement
+	*/
 	void LoadFile(CString filename);
+
+	/**
+	@return the canvas' bounding rectangle
+	*/
 	CRect getCanvasRect() const;
+
+	/**
+	Checks if a point is inside the canvas
+	@return true if inside, false otherwise
+	*/
 	bool isInsideCanvas(const CPoint&);
+
+	/**
+	Asks the user to save if there are unsaved changes see OnFileSave
+	@return if saved or not needed will return IDYES, otherwise will return the dialog's result int - one of: IDNO or IDCANCEL
+	*/
 	int AskSave();
 
 // Construction

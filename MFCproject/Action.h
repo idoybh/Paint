@@ -14,9 +14,24 @@ private:
 public:
 	DECLARE_SERIAL(Action)
 	Action() : kind(0), fig(NULL) { }; // for serialization
-	Action(int, Figure*);
+
+	/**
+	Constructs a new Action
+	@param kind the action kind
+	@param a pointer to the Figure to store (a deep copy will be stored)
+	*/
+	Action(int kind, Figure* fig);
+
 	void Serialize(CArchive& ar);
+
+	/**
+	@return action kind
+	*/
 	int getKind() const;
+
+	/**
+	@return a pointer to the stored figure
+	*/
 	Figure* getFigure() const;
 };
 

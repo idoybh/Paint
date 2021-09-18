@@ -98,9 +98,11 @@ BOOL CMFCprojectDlg::OnInitDialog()
 
 BOOL CMFCprojectDlg::OnEraseBkgnd(CDC* dc) {
 	if (!bgDone) {
+		// only draw the default background once
 		CDialogEx::OnEraseBkgnd(dc);
 		bgDone = true;
 	}
+	// skip redrawing the background to avoid flickering
 	return TRUE;
 }
 
@@ -132,23 +134,28 @@ void CMFCprojectDlg::OnPaint()
 		CPaintDC dc(this); // device context for painting
 		CRect rect = getCanvasRect();
 
-		CDC mDC;
-		CBitmap mBitmap;
+		CDC mDC; // memory CDC
+		CBitmap mBitmap; // mamory CBitmap
 		mDC.CreateCompatibleDC(&dc);
 		mBitmap.CreateCompatibleBitmap(&dc, rect.right, rect.bottom);
 		CBitmap* oBitmap = (CBitmap*)mDC.SelectObject(&mBitmap);
+		// draw the background
 		mDC.FillSolidRect(0, 0, rect.right, rect.bottom, GetSysColor(COLOR_3DFACE));
 
+		// draw to the memory dc
 		for (int i = 0; i < figs.GetSize(); i++)
 			figs[i]->Draw(&mDC);
 
+		// copy to the on-screen dc bit by bit to avoid flickering
 		dc.BitBlt(0, 0, rect.right, rect.bottom, &mDC, 0, 0, SRCCOPY);
 		mDC.SelectObject(oBitmap);
 
 		ReleaseDC(&dc);
 		ReleaseDC(&mDC);
 
-		// CDialogEx::OnPaint();
+		// To avoid the control's flickering we call InvalidateRect() instead of Invalidate()
+
+		CDialogEx::OnPaint();
 	}
 }
 
@@ -200,6 +207,7 @@ void CMFCprojectDlg::OnRButtonDown(UINT nFlags, CPoint point) {
 		}
 	}
 	if (!found && copyFig != NULL) {
+		// open up context menu for paste only
 		ClientToScreen(&point);
 		popup->EnableMenuItem(ID_FIGKIND_ERASE, MF_DISABLED);
 		popup->EnableMenuItem(ID_FIGKIND_TRANSFORM, MF_DISABLED);
@@ -741,10 +749,12 @@ void CMFCprojectDlg::LoadFile(CString filename) {
 }
 
 CRect CMFCprojectDlg::getCanvasRect() const {
+	// get the canvas' bounding rectangle 
 	CWnd* canvas = GetDlgItem(IDC_STATIC6);
 	CRect rect;
 	canvas->GetWindowRect(rect);
 	ScreenToClient(rect);
+	// Add a border of 5px
 	rect.TopLeft().x += 5;
 	rect.TopLeft().y += 5;
 	rect.BottomRight().x -= 5;
@@ -753,7 +763,6 @@ CRect CMFCprojectDlg::getCanvasRect() const {
 }
 
 bool CMFCprojectDlg::isInsideCanvas(const CPoint& pnt) {
-	CWnd* canvas = GetDlgItem(IDC_STATIC6);
 	CRect rect = getCanvasRect();
 	return (pnt.x >= rect.TopLeft().x && pnt.y >= rect.TopLeft().y
 		&& pnt.x <= rect.BottomRight().x && pnt.y <= rect.BottomRight().y);
