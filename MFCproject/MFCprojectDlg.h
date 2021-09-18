@@ -26,6 +26,7 @@ private:
 
 	bool isPressed = false;
 	bool isSaved = true;
+	bool bgDone = false;
 	Figure* movingFig = NULL;
 	Figure* copyFig = NULL;
 
@@ -52,6 +53,7 @@ private:
 	void RestoreFigure(Figure*);
 	void EnableDrawing();
 	void LoadFile(CString filename);
+	CRect getCanvasRect() const;
 	bool isInsideCanvas(const CPoint&);
 	int AskSave();
 
@@ -74,6 +76,7 @@ protected:
 
 	// Generated message map functions
 	virtual BOOL OnInitDialog();
+	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
 	afx_msg void OnDropFiles(HDROP hDropInfo);

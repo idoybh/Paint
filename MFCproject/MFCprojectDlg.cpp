@@ -24,6 +24,7 @@ void CMFCprojectDlg::DoDataExchange(CDataExchange* pDX) {
 }
 
 BEGIN_MESSAGE_MAP(CMFCprojectDlg, CDialogEx)
+	ON_WM_ERASEBKGND()
 	ON_WM_PAINT()
 	ON_WM_QUERYDRAGICON()
 	ON_WM_DROPFILES()
@@ -94,6 +95,15 @@ BOOL CMFCprojectDlg::OnInitDialog()
 	return TRUE;  // return TRUE  unless you set the focus to a control
 }
 
+
+BOOL CMFCprojectDlg::OnEraseBkgnd(CDC* dc) {
+	if (!bgDone) {
+		CDialogEx::OnEraseBkgnd(dc);
+		bgDone = true;
+	}
+	return TRUE;
+}
+
 // If you add a minimize button to your dialog, you will need the code below
 //  to draw the icon.  For MFC applications using the document/view model,
 //  this is automatically done for you by the framework.
@@ -120,9 +130,25 @@ void CMFCprojectDlg::OnPaint()
 	else
 	{
 		CPaintDC dc(this); // device context for painting
+		CRect rect = getCanvasRect();
+
+		CDC mDC;
+		CBitmap mBitmap;
+		mDC.CreateCompatibleDC(&dc);
+		mBitmap.CreateCompatibleBitmap(&dc, rect.right, rect.bottom);
+		CBitmap* oBitmap = (CBitmap*)mDC.SelectObject(&mBitmap);
+		mDC.FillSolidRect(0, 0, rect.right, rect.bottom, RGB(240, 240, 240));
+
 		for (int i = 0; i < figs.GetSize(); i++)
-			figs[i]->Draw(&dc);
-		CDialogEx::OnPaint();
+			figs[i]->Draw(&mDC);
+
+		dc.BitBlt(0, 0, rect.right, rect.bottom, &mDC, 0, 0, SRCCOPY);
+		mDC.SelectObject(oBitmap);
+
+		ReleaseDC(&dc);
+		ReleaseDC(&mDC);
+
+		// CDialogEx::OnPaint();
 	}
 }
 
@@ -200,7 +226,7 @@ void CMFCprojectDlg::OnLButtonDown(UINT nFlags, CPoint point)
 					if (fig->isInside(point)) {
 						AddAction(ACTION_KIND_ERASE, fig);
 						figs.RemoveAt(i);
-						Invalidate();
+						InvalidateRect(getCanvasRect());
 						break;
 					}
 				}
@@ -221,7 +247,7 @@ void CMFCprojectDlg::OnLButtonDown(UINT nFlags, CPoint point)
 					if (fig->isInside(point)) {
 						AddAction(ACTION_KIND_TRANSFORM, figs.GetAt(i));
 						SetSelectedProps(figs.GetAt(i));
-						Invalidate();
+						InvalidateRect(getCanvasRect());
 						break;
 					}
 				}
@@ -244,7 +270,7 @@ void CMFCprojectDlg::OnLButtonUp(UINT nFlags, CPoint point)
 				}
 				end = point;
 				figs[figs.GetSize() - 1]->Redefine(start, end);
-				Invalidate(); //simulates the WM_PAINT message to redraw window
+				InvalidateRect(getCanvasRect()); //simulates the WM_PAINT message to redraw window
 				AddAction(ACTION_KIND_DRAW, figs[figs.GetSize() - 1]);
 				break;
 			case ACTION_KIND_ERASE:
@@ -277,7 +303,7 @@ void CMFCprojectDlg::OnMouseMove(UINT nFlags, CPoint point)
 					figs[figs.GetSize() - 1]->Redefine(start, end);
 				else
 					((FreeLineF*)figs[figs.GetSize() - 1])->AddPoint(end);
-				Invalidate(); //simulates the WM_PAINT message to redraw window
+				InvalidateRect(getCanvasRect()); //simulates the WM_PAINT message to redraw window
 				break;
 			case ACTION_KIND_ERASE:
 				for (INT_PTR i = figs.GetSize() - 1; i >= 0; i--) {
@@ -285,7 +311,7 @@ void CMFCprojectDlg::OnMouseMove(UINT nFlags, CPoint point)
 					if (fig->isInside(point)) {
 						AddAction(ACTION_KIND_ERASE, fig);
 						figs.RemoveAt(i);
-						Invalidate();
+						InvalidateRect(getCanvasRect());
 						break;
 					}
 				}
@@ -305,7 +331,7 @@ void CMFCprojectDlg::OnMouseMove(UINT nFlags, CPoint point)
 					if (!isInsideCanvas(fPTL) || !isInsideCanvas(fPBR)) break;
 					movingFig->Shift(deltaX, deltaY);
 					start = end;
-					Invalidate();
+					InvalidateRect(getCanvasRect());
 				}
 				break;
 			case ACTION_KIND_TRANSFORM:
@@ -409,7 +435,7 @@ void CMFCprojectDlg::OnFileNew() {
 	m_UndoBtn->EnableWindow(FALSE);
 	m_RedoBtn->EnableWindow(FALSE);
 	figs.RemoveAll();
-	Invalidate();
+	InvalidateRect(getCanvasRect());
 	isSaved = true;
 }
 
@@ -484,7 +510,7 @@ void CMFCprojectDlg::OnEditUndo() {
 			}
 			break;
 	}
-	Invalidate();
+	InvalidateRect(getCanvasRect());
 	actions.RemoveAt(actions.GetSize() - 1);
 	if (actions.IsEmpty()) {
 		m_EditMenu->EnableMenuItem(ID_EDIT_UNDO, MF_DISABLED);
@@ -535,7 +561,7 @@ void CMFCprojectDlg::OnEditRedo() {
 			}
 			break;
 	}
-	Invalidate();
+	InvalidateRect(getCanvasRect());
 	redoActions.RemoveAt(redoActions.GetSize() - 1);
 	m_EditMenu->EnableMenuItem(ID_EDIT_UNDO, MF_ENABLED);
 	m_UndoBtn->EnableWindow(TRUE);
@@ -550,13 +576,13 @@ void CMFCprojectDlg::OnEditRedo() {
 void CMFCprojectDlg::OnFigkindErase() {
 	AddAction(ACTION_KIND_ERASE, figs.GetAt(contextFigIndex));
 	figs.RemoveAt(contextFigIndex);
-	Invalidate();
+	InvalidateRect(getCanvasRect());
 }
 
 void CMFCprojectDlg::OnFigkindTransform() {
 	AddAction(ACTION_KIND_TRANSFORM, figs.GetAt(contextFigIndex));
 	SetSelectedProps(figs.GetAt(contextFigIndex));
-	Invalidate();
+	InvalidateRect(getCanvasRect());
 }
 
 void CMFCprojectDlg::OnFigkindCopy() {
@@ -602,7 +628,7 @@ void CMFCprojectDlg::OnFigkindPaste() {
 	SetSelectedProps(figs[figs.GetSize() - 1]);
 
 	AddAction(ACTION_KIND_DRAW, figs[figs.GetSize() - 1]);
-	Invalidate();
+	InvalidateRect(getCanvasRect());
 }
 
 // helper functions
@@ -704,7 +730,7 @@ void CMFCprojectDlg::LoadFile(CString filename) {
 	redoActions.Serialize(ar);
 	ar.Close();
 	file.Close();
-	Invalidate();
+	InvalidateRect(getCanvasRect());
 	m_EditMenu->EnableMenuItem(ID_EDIT_UNDO,
 		actions.IsEmpty() ? MF_DISABLED : MF_ENABLED);
 	m_EditMenu->EnableMenuItem(ID_EDIT_REDO,
@@ -714,13 +740,23 @@ void CMFCprojectDlg::LoadFile(CString filename) {
 	isSaved = true;
 }
 
-bool CMFCprojectDlg::isInsideCanvas(const CPoint& pnt) {
+CRect CMFCprojectDlg::getCanvasRect() const {
 	CWnd* canvas = GetDlgItem(IDC_STATIC6);
 	CRect rect;
 	canvas->GetWindowRect(rect);
 	ScreenToClient(rect);
-	return (pnt.x >= rect.TopLeft().x + 5 && pnt.y >= rect.TopLeft().y + 5
-		&& pnt.x <= rect.BottomRight().x - 5 && pnt.y <= rect.BottomRight().y - 5);
+	rect.TopLeft().x += 5;
+	rect.TopLeft().y += 5;
+	rect.BottomRight().x -= 5;
+	rect.BottomRight().y -= 5;
+	return rect;
+}
+
+bool CMFCprojectDlg::isInsideCanvas(const CPoint& pnt) {
+	CWnd* canvas = GetDlgItem(IDC_STATIC6);
+	CRect rect = getCanvasRect();
+	return (pnt.x >= rect.TopLeft().x && pnt.y >= rect.TopLeft().y
+		&& pnt.x <= rect.BottomRight().x && pnt.y <= rect.BottomRight().y);
 }
 
 int CMFCprojectDlg::AskSave() {
