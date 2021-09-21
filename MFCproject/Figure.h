@@ -8,6 +8,7 @@
 #define FIGURE_KIND_LINE 3
 #define FIGURE_KIND_FREE_LINE 4
 #define FIGURE_KIND_PARALLEL 5
+#define FIGURE_KIND_TRAPEZOID 6
 
 using std::vector;
 

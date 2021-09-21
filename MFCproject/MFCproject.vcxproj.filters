@@ -54,6 +54,9 @@
     <ClInclude Include="ParallelogramF.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="TrapezoidF.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MFCproject.cpp">
@@ -87,6 +90,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ParallelogramF.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="TrapezoidF.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

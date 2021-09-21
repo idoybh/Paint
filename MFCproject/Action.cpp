@@ -6,13 +6,14 @@
 #include "LineF.h"
 #include "FreeLineF.h"
 #include "ParallelogramF.h"
+#include "TrapezoidF.h"
 
 IMPLEMENT_SERIAL(Action, CObject, 2)
 
 Action::Action(int kind, Figure* fig)
 	: kind(kind) {
-	// we need to store a deep copy.
-	// storing in a pointer to achive proper polymorphism
+	// we need to store a deep copy so we can restore all properties
+	// storing in a pointer to achieve proper polymorphism
 	switch (fig->GetKind()) {
 		default:
 		case FIGURE_KIND_RECTANGLE:
@@ -32,6 +33,9 @@ Action::Action(int kind, Figure* fig)
 			break;
 		case FIGURE_KIND_PARALLEL:
 			this->fig = (new ParallelogramF(*(ParallelogramF*)fig));
+			break;
+		case FIGURE_KIND_TRAPEZOID:
+			this->fig = (new TrapezoidF(*(TrapezoidF*)fig));
 			break;
 	}
 }
@@ -63,6 +67,9 @@ void Action::Serialize(CArchive& ar) {
 				break;
 			case FIGURE_KIND_PARALLEL:
 				fig = new ParallelogramF();
+				break;
+			case FIGURE_KIND_TRAPEZOID:
+				fig = new TrapezoidF();
 				break;
 		}
 	}
