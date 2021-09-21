@@ -17,8 +17,8 @@ public:
 
 	/**
 	Constructs a parallelogram from 2 points, assigns specific ID
-	@param p1 top left corner
-	@param p2 bottom right corner
+	@param p1 top left corner of the bounding rectangle
+	@param p2 bottom right corner of the bounding rectangle
 	@param ID the designated ID
 	*/
 	ParallelogramF(CPoint p1, CPoint p2, int ID);

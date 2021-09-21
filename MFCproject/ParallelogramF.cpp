@@ -39,7 +39,7 @@ bool ParallelogramF::isInside(const CPoint& P) const {
 	// skip calculating if not even in the bounding rectangle
 	if (!Figure::isInside(P)) return false;
 
-	// caculating all relative spaces to P using Heron's formula
+	// finding the number of intersections with the point's positive x parallel line
 	CPoint A, B, C, D;
 	A = getP1();
 	B.x = getP2().x - abs(getP2().x - getP1().x) / 4;
@@ -48,34 +48,12 @@ bool ParallelogramF::isInside(const CPoint& P) const {
 	D.x = getP1().x + abs(getP2().x - getP1().x) / 4;
 	D.y = getP2().y;
 
-	double BC = sqrt((C.x - B.x) * (C.x - B.x) + (C.y - B.y) * (C.y - B.y)); // = AD
-	double BA = sqrt((A.x - B.x) * (A.x - B.x) + (A.y - B.y) * (A.y - B.y)); // = DC
+	// x = (y - y1 + m * x1) / m
+	int inter = 0;
+	double Mad = (double)(A.y - D.y) / (A.x - D.x);
+	if (((P.y - A.y + Mad * A.x) / Mad) > P.x) inter++;
+	double Mbc = (double)(B.y - C.y) / (B.x - C.x);
+	if (((P.y - B.y + Mbc * B.x) / Mbc) > P.x) inter++;
 
-	double PB = sqrt((P.x - B.x) * (P.x - B.x) + (P.y - B.y) * (P.y - B.y));
-	double PC = sqrt((P.x - C.x) * (P.x - C.x) + (P.y - C.y) * (P.y - C.y));
-	double PA = sqrt((P.x - A.x) * (P.x - A.x) + (P.y - A.y) * (P.y - A.y));
-	double PD = sqrt((P.x - D.x) * (P.x - D.x) + (P.y - D.y) * (P.y - D.y));
-
-	// S(ABCD)
-	double ttlSpace = abs(C.y - B.y) * BA;
-
-	// S(PBC)
-	double d = (PB + PC + BC) / 2;
-	double s1 = sqrt(d * (d - PB) * (d - PC) * (d - BC));
-
-	// S(PBA)
-	d = (PB + PA + BA) / 2;
-	double s2 = sqrt(d * (d - PB) * (d - PA) * (d - BA));
-
-	// S(PAD)
-	d = (PD + PA + BC) / 2;
-	double s3 = sqrt(d * (d - PD) * (d - PA) * (d - BC));
-
-	// S(PDC)
-	d = (PD + PC + BA) / 2;
-	double s4 = sqrt(d * (d - PD) * (d - PC) * (d - BA));
-
-	// return true if the sum of all spaces = to the parallelogram's space
-	double diff = abs(ttlSpace - (s1 + s2 + s3 + s4));
-	return diff <= 1; // allow some deviation
+	return inter % 2 != 0; // if odd we're inside
 }

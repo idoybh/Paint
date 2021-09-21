@@ -784,7 +784,7 @@ CRect CMFCprojectDlg::getCanvasRect() const {
 	rect.TopLeft().x += 5;
 	rect.TopLeft().y += 5;
 	rect.BottomRight().x -= 5;
-	rect.BottomRight().y -= 5;
+	rect.BottomRight().y -= 7;
 	return rect;
 }
 

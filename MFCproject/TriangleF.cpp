@@ -37,7 +37,7 @@ bool TriangleF::isInside(const CPoint& P) const {
 	// skip calculating if not even in the bounding rectangle
 	if (!Figure::isInside(P)) return false;
 
-	// caculating all relative spaces to P using Heron's formula
+	// finding the number of intersections with the point's positive x parallel line
 	CPoint A, B, C;
 	A.x = getP1().x;
 	A.y = getP2().y;
@@ -45,31 +45,12 @@ bool TriangleF::isInside(const CPoint& P) const {
 	B.y = getP1().y;
 	C = getP2();
 
-	double BC = sqrt((C.x - B.x) * (C.x - B.x) + (C.y - B.y) * (C.y - B.y));
-	double BA = sqrt((A.x - B.x) * (A.x - B.x) + (A.y - B.y) * (A.y - B.y));
-	double AC = sqrt((C.x - A.x) * (C.x - A.x) + (C.y - A.y) * (C.y - A.y));
+	// x = (y - y1 + m * x1) / m
+	int inter = 0;
+	double Mab = (double)(A.y - B.y) / (A.x - B.x);
+	if (((P.y - A.y + Mab * A.x) / Mab) > P.x) inter++;
+	double Mbc = (double)(B.y - C.y) / (B.x - C.x);
+	if (((P.y - B.y + Mbc * B.x) / Mbc) > P.x) inter++;
 
-	double PB = sqrt((P.x - B.x) * (P.x - B.x) + (P.y - B.y) * (P.y - B.y));
-	double PC = sqrt((P.x - C.x) * (P.x - C.x) + (P.y - C.y) * (P.y - C.y));
-	double PA = sqrt((P.x - A.x) * (P.x - A.x) + (P.y - A.y) * (P.y - A.y));
-
-	// S(ABC)
-	double d = (BA + BC + AC) / 2;
-	double ttlSpace = sqrt(d * (d - BA) * (d - BC) * (d - AC));
-
-	// S(PBC)
-	d = (PB + PC + BC) / 2;
-	double s1 = sqrt(d * (d - PB) * (d - PC) * (d - BC));
-
-	// S(PBA)
-	d = (PB + PA + BA) / 2;
-	double s2 = sqrt(d * (d - PB) * (d - PA) * (d - BA));
-
-	// S(PAC)
-	d = (PA + PC + AC) / 2;
-	double s3 = sqrt(d * (d - PA) * (d - PC) * (d - AC));
-
-	// return true if the sum of all spaces = to the rectangle's space
-	double diff = abs(ttlSpace - (s1 + s2 + s3));
-	return diff <= 1; // allow some deviation
+	return inter % 2 != 0; // if odd we're inside
 }
