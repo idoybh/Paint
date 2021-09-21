@@ -51,6 +51,9 @@
     <ClInclude Include="FreeLineF.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ParallelogramF.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="MFCproject.cpp">
@@ -81,6 +84,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="FreeLineF.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ParallelogramF.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

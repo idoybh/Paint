@@ -5,6 +5,7 @@
 #include "TriangleF.h"
 #include "LineF.h"
 #include "FreeLineF.h"
+#include "ParallelogramF.h"
 
 IMPLEMENT_SERIAL(Action, CObject, 2)
 
@@ -28,6 +29,9 @@ Action::Action(int kind, Figure* fig)
 			break;
 		case FIGURE_KIND_FREE_LINE:
 			this->fig = (new FreeLineF(*(FreeLineF*)fig));
+			break;
+		case FIGURE_KIND_PARALLEL:
+			this->fig = (new ParallelogramF(*(ParallelogramF*)fig));
 			break;
 	}
 }
@@ -56,6 +60,9 @@ void Action::Serialize(CArchive& ar) {
 				break;
 			case FIGURE_KIND_FREE_LINE:
 				fig = new FreeLineF();
+				break;
+			case FIGURE_KIND_PARALLEL:
+				fig = new ParallelogramF();
 				break;
 		}
 	}

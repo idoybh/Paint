@@ -186,6 +186,7 @@
     <ClInclude Include="LineF.h" />
     <ClInclude Include="MFCproject.h" />
     <ClInclude Include="MFCprojectDlg.h" />
+    <ClInclude Include="ParallelogramF.h" />
     <ClInclude Include="RectangleF.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="stdafx.h" />
@@ -200,6 +201,7 @@
     <ClCompile Include="LineF.cpp" />
     <ClCompile Include="MFCproject.cpp" />
     <ClCompile Include="MFCprojectDlg.cpp" />
+    <ClCompile Include="ParallelogramF.cpp" />
     <ClCompile Include="RectangleF.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

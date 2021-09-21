@@ -615,6 +615,9 @@ void CMFCprojectDlg::OnFigkindPaste() {
 		case FIGURE_KIND_FREE_LINE:
 			figs.Add(new FreeLineF(((FreeLineF*)copyFig)->getPoints()));
 			break;
+		case FIGURE_KIND_PARALLEL:
+			figs.Add(new ParallelogramF(copyFig->getP1(), copyFig->getP2()));
+			break;
 	}
 	// move it to the cursor position
 	CPoint p1 = copyFig->getP1();
@@ -658,6 +661,10 @@ void CMFCprojectDlg::DrawFig(int kind, CPoint p1, CPoint p2) {
 			break;
 		case FIGURE_KIND_FREE_LINE:
 			figs.Add(new FreeLineF(p1));
+			break;
+		case FIGURE_KIND_PARALLEL:
+			figs.Add(new ParallelogramF(p1, p2));
+			break;
 	}
 	SetSelectedProps(figs[figs.GetSize() - 1]);
 }
@@ -679,6 +686,10 @@ void CMFCprojectDlg::DrawFig(int kind, CPoint p1, CPoint p2, int ID) {
 			break;
 		case FIGURE_KIND_FREE_LINE:
 			figs.Add(new FreeLineF(p1, ID));
+			break;
+		case FIGURE_KIND_PARALLEL:
+			figs.Add(new ParallelogramF(p1, p2, ID));
+			break;
 	}
 	SetSelectedProps(figs[figs.GetSize() - 1]);
 }
@@ -716,6 +727,9 @@ void CMFCprojectDlg::RestoreFigure(Figure* fig) {
 			break;
 		case FIGURE_KIND_FREE_LINE:
 			figs.Add(new FreeLineF(((FreeLineF*) fig)->getPoints(), fig->getID()));
+			break;
+		case FIGURE_KIND_PARALLEL:
+			figs.Add(new ParallelogramF(fig->getP1(), fig->getP2(), fig->getID()));
 			break;
 	}
 	figs[figs.GetSize() - 1]->SetBGColor(fig->GetBGColor());

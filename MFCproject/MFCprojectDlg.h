@@ -11,6 +11,7 @@
 #include "LineF.h"
 #include "TriangleF.h"
 #include "FreeLineF.h"
+#include "ParallelogramF.h"
 
 // CMFCprojectDlg dialog
 class CMFCprojectDlg : public CDialogEx
