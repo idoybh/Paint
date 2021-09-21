@@ -330,13 +330,11 @@ void CMFCprojectDlg::OnMouseMove(UINT nFlags, CPoint point)
 					long deltaX = end.x - start.x;
 					long deltaY = end.y - start.y;
 					// avoid moving out of canvas
-					CPoint fPTL = movingFig->getP1().x < movingFig->getP2().x ?
-						movingFig->getP1() : movingFig->getP2();
-					fPTL.x += deltaX; fPTL.y += deltaY;
-					CPoint fPBR = movingFig->getP1().x < movingFig->getP2().x ?
-						movingFig->getP2() : movingFig->getP1();
-					fPBR.x += deltaX; fPBR.y += deltaY;
-					if (!isInsideCanvas(fPTL) || !isInsideCanvas(fPBR)) break;
+					CPoint fP1 = movingFig->getP1();
+					fP1.x += deltaX; fP1.y += deltaY;
+					CPoint fP2 = movingFig->getP2();
+					fP2.x += deltaX; fP2.y += deltaY;
+					if (!isInsideCanvas(fP1) || !isInsideCanvas(fP2)) break;
 					movingFig->Shift(deltaX, deltaY);
 					start = end;
 					InvalidateRect(getCanvasRect());

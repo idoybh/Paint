@@ -26,11 +26,11 @@ void ParallelogramF::Draw(CDC* dc) const {
 	CPoint vertices[4];
 	vertices[0].x = p1.x;
 	vertices[0].y = p1.y;
-	vertices[1].x = p2.x - abs(p2.x - p1.x) / 4;
+	vertices[1].x = p2.x - (p2.x - p1.x) / 4;
 	vertices[1].y = p1.y;
 	vertices[2].x = p2.x;
 	vertices[2].y = p2.y;
-	vertices[3].x = p1.x + abs(p2.x - p1.x) / 4;
+	vertices[3].x = p1.x + (p2.x - p1.x) / 4;
 	vertices[3].y = p2.y;
 	dc->Polygon(vertices, 4);
 }
